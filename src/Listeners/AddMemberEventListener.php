@@ -27,8 +27,6 @@ class AddMemberEventListener
 
     public function handle(AddMember $event)
     {
-        // Access the order using $event->order...
-
         $userId = $event->userId;
         $email = $event->email;
         $tags = $event->tags;
@@ -53,7 +51,6 @@ class AddMemberEventListener
             $intercomApiResults['add tag ' . $tag] = $intercomApiResult;
         }
 
-//        $query = $this->databaseManager->connection('mysql')->table(config('intercomeo.tables.intercomeo_users'));
         $query = $this->databaseManager->connection('sqlite')->table(config('intercomeo.tables.intercomeo_users'));
 
         $query->insert([
@@ -62,11 +59,6 @@ class AddMemberEventListener
             'email' => $email,
         ]);
 
-        $winning = !empty($intercomApiResults);
-
-        $idToSave = $intercomApiResults["user create"]->id;
-
-        $foo['idToSave'] = $idToSave;
-
+        return true;
     }
 }
