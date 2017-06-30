@@ -18,6 +18,10 @@ class TestCase extends BaseTestCase
      * @var DatabaseManager
      */
     protected $databaseManager;
+
+    /**
+     * @var \Illuminate\Database\Query\Builder
+     */
     protected $queryIntercomUsersTable;
 
     protected function setUp()
