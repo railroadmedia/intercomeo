@@ -15,7 +15,6 @@ class AddMemberEventListener
         /*
          * created as singleton in service provide because we need to set the api credentials
          */
-
         $intercomClient = resolve('Intercom\IntercomClient');
 
         $this->intercomClient = $intercomClient;
@@ -34,9 +33,7 @@ class AddMemberEventListener
 
         $intercomApiResult = $this->intercomClient->users->create([
             "email" => $email,
-            "custom_attributes" => [
-                "laravel_user_id" => $userId
-            ]
+            "user_id" => $userId
         ]);
 
         $intercomApiResults['user create'] = $intercomApiResult;
@@ -50,9 +47,11 @@ class AddMemberEventListener
             $intercomApiResults['add tag ' . $tag] = $intercomApiResult;
         }
 
+        $intercomUserId = $intercomApiResults['user create']->id;
+
         $this->queryIntercomUsersTable->insert([
             'user_id' => $userId,
-            'intercom_user_id' => $intercomApiResults['user create']->id,
+            'intercom_user_id' => $intercomUserId,
             'email' => $email,
         ]);
 

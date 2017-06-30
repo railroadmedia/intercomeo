@@ -2,6 +2,7 @@
 
 namespace Railroad\Intercomeo\Tests;
 
+use Mockery\Exception;
 use Railroad\Intercomeo\Events\AddMember;
 
 class AddMemberTest extends TestCase
@@ -20,16 +21,14 @@ class AddMemberTest extends TestCase
 
         event(new AddMember($userId, $email, $tags));
 
-        $results = $this->queryIntercomUsersTable->select(['email', 'user_id'], [$email, $userId])->get();
+        $results = $this->queryIntercomUsersTable->select()->where([['email', $email], ['user_id', $userId]])->get();
 
         $this->assertCount(1, $results);
 
-        // convert stdClass to array (https://stackoverflow.com/a/18576902)
-        $row = json_decode(json_encode($results->first()), true);
+        $this->assertEquals($userId, $results->first()->user_id);
+        $this->assertEquals($email, $results->first()->email);
+        $this->assertTrue(!empty($results->first()->intercom_user_id));
 
-        $this->assertCount(3, $row);
-        $this->assertEquals($userId, $row['user_id']);
-        $this->assertEquals($email, $row['email']);
-        $this->assertTrue(array_key_exists('intercom_user_id', $row));
+        $this->deleteUser($email);
     }
 }

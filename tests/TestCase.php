@@ -24,6 +24,11 @@ class TestCase extends BaseTestCase
      */
     protected $queryIntercomUsersTable;
 
+    /**
+     * @var $intercomClient \Intercom\IntercomClient
+     */
+    protected $intercomClient;
+
     protected function setUp()
     {
         parent::setUp();
@@ -38,6 +43,12 @@ class TestCase extends BaseTestCase
         );
 
         Carbon::setTestNow(Carbon::now());
+
+        /*
+         * created as singleton in service provide because we need to set the api credentials
+         */
+        $intercomClient = resolve('Intercom\IntercomClient');
+        $this->intercomClient = $intercomClient;
     }
 
     /**
@@ -70,5 +81,42 @@ class TestCase extends BaseTestCase
                 'prefix' => '',
             ]
         );
+    }
+
+    protected function deleteUser($email){
+        $user = null;
+        $userDeleted = false;
+        $this->intercomClient->users->deleteUser('', ['email' => $email]);
+
+        try{
+            $user = $this->intercomClient->users->getUser('', ['email' => $email]);
+        }catch (\GuzzleHttp\Exception\RequestException $e){
+
+            $classIsCorrect = get_class($e) === \GuzzleHttp\Exception\ClientException::class;
+
+            $strposOne = strpos(
+                $e->getMessage(),
+                'Client error: `GET https://api.intercom.io/users/?email'
+            );
+
+            $strposTwo = strpos(
+                $e->getMessage(),
+                '","errors":[{"code":"not_found","message":"User Not Found"}]}'
+            );
+
+            // must be strict, strpos will troll u: php.net/manual/en/function.strpos.php → "Return Values"
+            $errorMessageIsAsExpected = ($strposOne !== false) && ($strposTwo !== false);
+
+            $userDeleted = $classIsCorrect && $errorMessageIsAsExpected;
+        }
+
+        $noUserFetched = is_null($user);
+
+        $successfulDelete = $noUserFetched && $userDeleted;
+
+        if(!$successfulDelete){
+            // No need to add another assertion to every test. Just cause to test to fail if this.
+            $this->assertTrue($successfulDelete);
+        }
     }
 }
