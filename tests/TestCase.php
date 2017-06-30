@@ -3,14 +3,10 @@
 namespace Railroad\Intercomeo\Tests;
 
 use Carbon\Carbon;
-use Exception;
 use Faker\Generator;
-use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Database\Schema\Blueprint;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
-use Illuminate\Auth\AuthManager;
 
 class TestCase extends BaseTestCase
 {
@@ -22,6 +18,7 @@ class TestCase extends BaseTestCase
      * @var DatabaseManager
      */
     protected $databaseManager;
+    protected $queryIntercomUsersTable;
 
     protected function setUp()
     {
@@ -32,8 +29,20 @@ class TestCase extends BaseTestCase
 
         $this->faker = $this->app->make(Generator::class);
         $this->databaseManager = $this->app->make(DatabaseManager::class);
+        $this->queryIntercomUsersTable = $this->databaseManager->connection()->table(
+            config('intercomeo.tables.intercom_users')
+        );
 
         Carbon::setTestNow(Carbon::now());
+    }
+
+    /**
+     * @param \Illuminate\Foundation\Application $app
+     * @return array
+     */
+    protected function getPackageProviders($app)
+    {
+        return [IntercomeoServiceProvider::class];
     }
 
     /**
@@ -48,8 +57,6 @@ class TestCase extends BaseTestCase
 
         $app['config']->set('intercomeo.tables', $defaultConfig['tables']);
         $app['config']->set('intercomeo.database_connection_name', 'testbench');
-
-        // Setup default database to use sqlite :memory:
         $app['config']->set('database.default', 'testbench');
         $app['config']->set(
             'database.connections.testbench',
@@ -59,7 +66,5 @@ class TestCase extends BaseTestCase
                 'prefix' => '',
             ]
         );
-
-        $app->register(IntercomeoServiceProvider::class);
     }
 }

@@ -7,10 +7,8 @@ use Railroad\Intercomeo\Events\AddMember;
 
 class AddMemberEventListener
 {
-
     private $intercomClient;
-    private $databaseManager;
-    private $connection;
+    private $queryIntercomUsersTable;
 
     public function __construct(DatabaseManager $databaseManager)
     {
@@ -21,8 +19,9 @@ class AddMemberEventListener
         $intercomClient = resolve('Intercom\IntercomClient');
 
         $this->intercomClient = $intercomClient;
-        $this->databaseManager = $databaseManager;
-        $this->connection = $databaseManager->connection();
+        $this->queryIntercomUsersTable = $databaseManager->connection()->table(
+            config('intercomeo.tables.intercom_users')
+        );
     }
 
     public function handle(AddMember $event)
@@ -51,9 +50,7 @@ class AddMemberEventListener
             $intercomApiResults['add tag ' . $tag] = $intercomApiResult;
         }
 
-        $query = $this->connection->table(config('intercomeo.tables.intercom_users'));
-
-        $query->insert([
+        $this->queryIntercomUsersTable->insert([
             'user_id' => $userId,
             'intercom_user_id' => $intercomApiResults['user create']->id,
             'email' => $email,
