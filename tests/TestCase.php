@@ -62,38 +62,4 @@ class TestCase extends BaseTestCase
 
         $app->register(IntercomeoServiceProvider::class);
     }
-
-    /*
-     * Hey, I'm pretty sure we don't actually need this. (Jonathan, Wed June 28th)
-     */
-    /**
-     * @param null $email
-     * @param null $userId
-     * @return array
-     */
-//    public function createAndLogInNewUser($email = null, $userId = null)
-//    {
-//        if(empty($email)){
-//            $email = $this->faker->email;
-//        }
-//
-//        if(empty($userId)){
-//            $userId = $this->faker->randomNumber(6);
-//        }
-//
-//        // from "users" or "intercom_users" ?
-//        $id = $this->databaseManager->connection()->query()->from('intercom_users')->insertGetId(
-//            [
-//                'email' => $email,
-//                'user_id' => $userId
-//            ]
-//        );
-//
-//        return [
-//            'id' => $id,
-//            'email' => $email,
-//            'user_id' => $userId
-//        ];
-//    }
-
 }
