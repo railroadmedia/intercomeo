@@ -3,8 +3,6 @@
 namespace Railroad\Intercomeo\Listeners;
 
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Support\Facades\App;
-use Intercom\IntercomClient;
 use Railroad\Intercomeo\Events\AddMember;
 
 class AddMemberEventListener
@@ -12,6 +10,7 @@ class AddMemberEventListener
 
     private $intercomClient;
     private $databaseManager;
+    private $connection;
 
     public function __construct(DatabaseManager $databaseManager)
     {
@@ -23,6 +22,7 @@ class AddMemberEventListener
 
         $this->intercomClient = $intercomClient;
         $this->databaseManager = $databaseManager;
+        $this->connection = $databaseManager->connection();
     }
 
     public function handle(AddMember $event)
@@ -51,7 +51,7 @@ class AddMemberEventListener
             $intercomApiResults['add tag ' . $tag] = $intercomApiResult;
         }
 
-        $query = $this->databaseManager->connection('sqlite')->table(config('intercomeo.tables.intercomeo_users'));
+        $query = $this->connection->table(config('intercomeo.tables.intercom_users'));
 
         $query->insert([
             'user_id' => $userId,
