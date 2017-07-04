@@ -2,14 +2,14 @@
 
 namespace Railroad\Intercomeo\Events;
 
-class AddMember
+class MemberAdded
 {
     public $userId;
     public $email;
     public $tags;
 
     /**
-     * AddMember constructor.
+     * MemberAdded constructor.
      * @param integer $userId
      * @param string $email
      * @param array $tags

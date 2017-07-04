@@ -3,23 +3,23 @@
 namespace Railroad\Intercomeo\Tests;
 
 use Mockery\Exception;
-use Railroad\Intercomeo\Events\AddMember;
+use Railroad\Intercomeo\Events\MemberAdded;
 
-class AddMemberTest extends TestCase
+class MemberAddedTest extends TestCase
 {
     protected function setUp()
     {
         parent::setUp();
     }
 
-    public function testAddMemberEvent()
+    public function testMemberAddedEvent()
     {
         $email = $this->faker->email;
         $userId = $this->faker->randomNumber(6);
 
         $tags = [$this->faker->word];
 
-        event(new AddMember($userId, $email, $tags));
+        event(new MemberAdded($userId, $email, $tags));
 
         $results = $this->queryIntercomUsersTable->select()->where([['email', $email], ['user_id', $userId]])->get();
 

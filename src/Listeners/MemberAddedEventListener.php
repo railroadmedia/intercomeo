@@ -3,9 +3,9 @@
 namespace Railroad\Intercomeo\Listeners;
 
 use Illuminate\Database\DatabaseManager;
-use Railroad\Intercomeo\Events\AddMember;
+use Railroad\Intercomeo\Events\MemberAdded;
 
-class AddMemberEventListener
+class MemberAddedEventListener
 {
     private $intercomClient;
     private $queryIntercomUsersTable;
@@ -23,7 +23,7 @@ class AddMemberEventListener
         );
     }
 
-    public function handle(AddMember $event)
+    public function handle(MemberAdded $event)
     {
         $userId = $event->userId;
         $email = $event->email;
