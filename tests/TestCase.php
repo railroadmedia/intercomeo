@@ -29,6 +29,12 @@ class TestCase extends BaseTestCase
      */
     protected $intercomClient;
 
+    /** @var string */
+    protected $email;
+
+    /** @var integer */
+    protected $userId;
+
     protected function setUp()
     {
         parent::setUp();
@@ -83,13 +89,25 @@ class TestCase extends BaseTestCase
         );
     }
 
-    protected function deleteUser($email){
+    /**
+     * @param string|integer $emailOrUserId
+     *
+     * If passing the user_id it must be an integer — any string passed will be assumed to be email
+     */
+    protected function deleteUser($emailOrUserId){
         $user = null;
         $userDeleted = false;
-        $this->intercomClient->users->deleteUser('', ['email' => $email]);
+
+        $identifier = 'email';
+
+        if(is_integer($emailOrUserId)){
+            $identifier = 'user_id';
+        }
+
+        $this->intercomClient->users->deleteUser('', [$identifier => $emailOrUserId]);
 
         try{
-            $user = $this->intercomClient->users->getUser('', ['email' => $email]);
+            $user = $this->intercomClient->users->getUser('', [$identifier => $emailOrUserId]);
         }catch (\GuzzleHttp\Exception\RequestException $e){
 
             $classIsCorrect = get_class($e) === \GuzzleHttp\Exception\ClientException::class;
