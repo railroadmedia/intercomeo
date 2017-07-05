@@ -2,7 +2,6 @@
 
 namespace Railroad\Intercomeo\Tests;
 
-use Mockery\Exception;
 use Railroad\Intercomeo\Events\MemberAdded;
 
 class MemberAddedTest extends TestCase
