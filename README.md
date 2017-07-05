@@ -5,14 +5,14 @@
 ## Installation
 
 1. Copy secrets to .env from secure note. The "access token" is key. "App ID" and "HMAC Secret" are optional. 
-1. Add to list of "providers" in `config/app.php` (Ideally defined in project - update things as you see fit!)
+1. ~~Add IntercomeoServiceProvider to list of "providers" in `config/app.php`.~~ **(but maybe not because it breaks *composer install*...?)** 
 1. Add to composer.json "require". (**No releases yet... see "Development Installation Note" below**)
 1. In `laravel` directory, run the following:
     1. `composer install`
     1. `php artisan migrate`
     1. `php artisan vendor:publish`
 1. Run `composer install` in `railroad/intercomeo` directory.
-2. Integrate into your application by firing `Intercomeo` events as needed.
+1. Integrate into your application by firing and calling `Intercomeo` events and methods (respectively) as needed.
 
 ### Development Installation Note
 
@@ -43,3 +43,6 @@ Only one parameter is required. Either the user's email address, or their ID *in
 
 A second parameter is available if you want to explicitly specify a time to set (rather than have the script just grab a timestamp when it runs - potentially relevant if you have a busy queue with this in the "low priority" pile?).
 
+## Question, Ruminations, Ponderings
+
+Instead of adding IntercomeoServiceProvider to list of "providers" in `larevel/config/app.php`, can we add it the package somewhere?
