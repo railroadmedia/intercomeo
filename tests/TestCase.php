@@ -27,8 +27,7 @@ class TestCase extends BaseTestCase
     protected function setUp()
     {
         parent::setUp();
-
-//        $this->artisan('migrate', []);
+        
         $this->artisan('cache:clear', []);
 
         $this->faker = $this->app->make(Generator::class);
