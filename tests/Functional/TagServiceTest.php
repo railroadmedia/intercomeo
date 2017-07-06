@@ -11,7 +11,7 @@ class TagServiceTest extends TestCase
         parent::setUp();
     }
 
-    public function test_add_tags_to_user(){
+    public function test_get_tags_for_user(){
         $email = $this->faker->email;
         $userId = $this->faker->randomNumber(6);
 
