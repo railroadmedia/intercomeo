@@ -7,7 +7,6 @@ use Faker\Generator;
 use Illuminate\Database\DatabaseManager;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
-use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 
 class TestCase extends BaseTestCase
 {
@@ -25,20 +24,14 @@ class TestCase extends BaseTestCase
      */
     protected $intercomClient;
 
-    /**
-     * @var $intercomUserRepository IntercomUsersRepository
-     */
-    protected $intercomUserRepository;
-
     protected function setUp()
     {
         parent::setUp();
 
-        $this->artisan('migrate', []);
+//        $this->artisan('migrate', []);
         $this->artisan('cache:clear', []);
 
         $this->faker = $this->app->make(Generator::class);
-        $this->intercomUserRepository = new IntercomUsersRepository($this->app->make(DatabaseManager::class));
 
         Carbon::setTestNow(Carbon::now());
 
@@ -66,19 +59,19 @@ class TestCase extends BaseTestCase
      */
     protected function getEnvironmentSetUp($app)
     {
-        $defaultConfig = require(__DIR__ . '/../config/intercomeo.php');
-
-        $app['config']->set('intercomeo.tables', $defaultConfig['tables']);
-        $app['config']->set('intercomeo.database_connection_name', 'testbench');
-        $app['config']->set('database.default', 'testbench');
-        $app['config']->set(
-            'database.connections.testbench',
-            [
-                'driver' => 'sqlite',
-                'database' => ':memory:',
-                'prefix' => '',
-            ]
-        );
+//        $defaultConfig = require(__DIR__ . '/../config/intercomeo.php');
+//
+//        $app['config']->set('intercomeo.tables', $defaultConfig['tables']);
+//        $app['config']->set('intercomeo.database_connection_name', 'testbench');
+//        $app['config']->set('database.default', 'testbench');
+//        $app['config']->set(
+//            'database.connections.testbench',
+//            [
+//                'driver' => 'sqlite',
+//                'database' => ':memory:',
+//                'prefix' => '',
+//            ]
+//        );
     }
 
     /**

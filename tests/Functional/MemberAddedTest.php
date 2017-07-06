@@ -15,16 +15,13 @@ class MemberAddedTest extends TestCase
     {
         $email = $this->faker->email;
         $userId = $this->faker->randomNumber(6);
-
         $tags = [$this->faker->word];
 
         event(new MemberAdded($userId, $email, $tags));
 
-        $user = $this->intercomUserRepository->get($email);
-
-        $this->assertEquals($userId, $user->user_id);
+        $user = $this->intercomClient->users->getUsers(['user_id' => $userId]);
+        $this->assertEquals($userId, (int) $user->user_id);
         $this->assertEquals($email, $user->email);
-        $this->assertTrue(!empty($user->intercom_user_id));
 
         $this->deleteUser($email);
     }

@@ -29,31 +29,17 @@ class MemberAddedEventListener
         $email = $event->email;
         $tags = $event->tags;
 
-        $intercomApiResults = [];
-
-        $intercomApiResult = $this->intercomClient->users->create([
+        $this->intercomClient->users->create([
             "email" => $email,
             "user_id" => $userId
         ]);
 
-        $intercomApiResults['user create'] = $intercomApiResult;
-
         foreach ($tags as $tag){
-            $intercomApiResult = $this->intercomClient->tags->tag([
+            $this->intercomClient->tags->tag([
                 "name" => $tag,
                 "users" => [["email" => $email]] // could use laravel_user_id or intercom user id?
             ]);
-
-            $intercomApiResults['add tag ' . $tag] = $intercomApiResult;
         }
-
-        $intercomUserId = $intercomApiResults['user create']->id;
-
-        $this->queryIntercomUsersTable->insert([
-            'user_id' => $userId,
-            'intercom_user_id' => $intercomUserId,
-            'email' => $email,
-        ]);
 
         return true;
     }
