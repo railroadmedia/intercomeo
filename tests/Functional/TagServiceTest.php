@@ -66,7 +66,7 @@ class TagServiceTest extends TestCase
         }
 
         foreach($tagsSecondBatch as $tagInSecondBatch){
-            $this->tagService->addTagToUsers($userId, $tagInSecondBatch);
+            $this->tagService->tagUsers($userId, $tagInSecondBatch);
         }
 
         $tags = array_merge($tags, $tagsSecondBatch);
@@ -79,7 +79,45 @@ class TagServiceTest extends TestCase
         $this->assertEquals($tags, $tagsStored);
     }
 
-    /*
-     * todo: test_add_tags_to_multiple_users
-     */
+    public function test_remove_tags_from_user(){
+        $email = $this->faker->email;
+        $userId = $this->faker->randomNumber(6);
+
+        $numberOfTagsToAdd = rand(1, 3);
+        $tags = [];
+
+        for($i = 0; $i < $numberOfTagsToAdd; $i++){
+            $tags[] = $this->faker->word;
+        }
+
+        event(new MemberAdded($userId, $email, $tags));
+
+        $tagsStored = $this->tagService->getTagsForUser($userId);
+
+        sort($tags);
+        sort($tagsStored);
+
+        $this->assertEquals($tags, $tagsStored);
+
+        /*
+         * ↑ is same as test_get_tags_for_user. New stuff below ↓
+         */
+
+        $randomIndexValue = rand(0, count($tags) - 1);
+
+        $tagToRemove = $tags[$randomIndexValue];
+
+        $this->tagService->tagUsers($userId, $tagToRemove, true);
+
+        $tagsStoredAfterUntag = $this->tagService->getTagsForUser($userId);
+
+        $tagsAfterUntag = $tags;
+
+        array_splice($tagsAfterUntag, $randomIndexValue, 1);
+
+        sort($tagsAfterUntag);
+        sort($tagsStoredAfterUntag);
+
+        $this->assertEquals($tagsAfterUntag, $tagsStoredAfterUntag);
+    }
 }

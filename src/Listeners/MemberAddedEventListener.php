@@ -42,7 +42,7 @@ class MemberAddedEventListener
         ]);
 
         foreach ($tags as $tag){
-            $this->tagService->addTagToUsers($userId, $tag);
+            $this->tagService->tagUsers($userId, $tag);
         }
 
         return true;

@@ -36,39 +36,55 @@ class TagService
 
     /**
      * @param int|string $userIds
-     * @param array|string $tag
+     * @param array|string $tags
+     * @param bool $untag
+     *
+     * Will one request *per* tag. Sad!
      */
-    public function addTagToUsers($userIds, $tag)
+    public function tagUsers($userIds, $tags, $untag = false)
     {
         if(!is_array($userIds)){
             $userIds = [$userIds];
         }
 
+        if(!is_array($tags)){
+            $tags = [$tags];
+        }
+
         $users = [];
 
         foreach($userIds as $userId){
-            $users[] = ['user_id' => $userId];
+            $users[] = [
+                'user_id' => $userId,
+                'untag' => $untag
+            ];
         }
 
-        $this->intercomClient->tags->tag([
-            'name' => $tag,
-            'users' => $users
-        ]);
+        foreach($tags as $tag){
+            $this->intercomClient->tags->tag([
+                'name' => $tag,
+                'users' => $users
+            ]);
+        }
     }
 
     /**
-     * @param array $userIds
-     * @param string $tag
+     * @param array|integer|string $userIds
+     * @param array|string $tags
+     *
+     * Will one request *per* tag. Sad!
      */
-//    public function addTagToUsers($userIds, $tag)
-//    {
-//        $this->intercomClient->users->update
-//    }
-//
-//    public function untagUsers($userIds, $tags)
-//    {
-//        foreach($userIds as $userId){
-//
-//        }
-//    }
+    public function untagUsers($userIds, $tags)
+    {
+        if(!is_array($userIds)){
+            $userIds = [$userIds];
+        }
+        if(!is_array($tags)){
+            $tags = [$tags];
+        }
+
+        foreach($tags as $tag){
+            $this->tagUsers($userIds, $tag, true);
+        }
+    }
 }
