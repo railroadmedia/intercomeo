@@ -33,4 +33,42 @@ class TagService
 
         return $tagsSimple;
     }
+
+    /**
+     * @param int|string $userIds
+     * @param array|string $tag
+     */
+    public function addTagToUsers($userIds, $tag)
+    {
+        if(!is_array($userIds)){
+            $userIds = [$userIds];
+        }
+
+        $users = [];
+
+        foreach($userIds as $userId){
+            $users[] = ['user_id' => $userId];
+        }
+
+        $this->intercomClient->tags->tag([
+            'name' => $tag,
+            'users' => $users
+        ]);
+    }
+
+    /**
+     * @param array $userIds
+     * @param string $tag
+     */
+//    public function addTagToUsers($userIds, $tag)
+//    {
+//        $this->intercomClient->users->update
+//    }
+//
+//    public function untagUsers($userIds, $tags)
+//    {
+//        foreach($userIds as $userId){
+//
+//        }
+//    }
 }
