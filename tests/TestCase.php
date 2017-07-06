@@ -7,6 +7,7 @@ use Faker\Generator;
 use Illuminate\Database\DatabaseManager;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
+use Railroad\Intercomeo\Services\TagService;
 
 class TestCase extends BaseTestCase
 {
@@ -24,6 +25,11 @@ class TestCase extends BaseTestCase
      */
     protected $intercomClient;
 
+    /**
+     * @var $tagService TagService
+     */
+    protected $tagService;
+
     protected function setUp()
     {
         parent::setUp();
@@ -39,6 +45,8 @@ class TestCase extends BaseTestCase
          */
         $intercomClient = resolve('Intercom\IntercomClient');
         $this->intercomClient = $intercomClient;
+
+        $this->tagService = $this->app->make(TagService::class);
     }
 
     /**
