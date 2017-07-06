@@ -70,31 +70,23 @@ class TestCase extends BaseTestCase
     }
 
     /**
-     * @param string|integer $emailOrUserId
-     *
-     * If passing the user_id it must be an integer — any string passed will be assumed to be email
+     * @param string|integer $userId
      */
-    protected function deleteUser($emailOrUserId){
+    protected function deleteUser($userId){
         $user = null;
         $userDeleted = false;
 
-        $identifier = 'email';
-
-        if(is_integer($emailOrUserId)){
-            $identifier = 'user_id';
-        }
-
-        $this->intercomClient->users->deleteUser('', [$identifier => $emailOrUserId]);
+        $this->intercomClient->users->deleteUser('', ['user_id' => $userId]);
 
         try{
-            $user = $this->intercomClient->users->getUser('', [$identifier => $emailOrUserId]);
+            $user = $this->intercomClient->users->getUsers(['user_id' => $userId]);
         }catch (\GuzzleHttp\Exception\RequestException $e){
 
             $classIsCorrect = get_class($e) === \GuzzleHttp\Exception\ClientException::class;
 
             $strposOne = strpos(
                 $e->getMessage(),
-                'Client error: `GET https://api.intercom.io/users/?email'
+                'Client error: `GET https://api.intercom.io/users?user_id'
             );
 
             $strposTwo = strpos(
@@ -113,7 +105,7 @@ class TestCase extends BaseTestCase
         $successfulDelete = $noUserFetched && $userDeleted;
 
         if(!$successfulDelete){
-            // No need to add another assertion to every test. Just cause to test to fail if this.
+            // No need to add another assertion to every test. Just cause to test to fail if this does.
             $this->assertTrue($successfulDelete);
         }
     }

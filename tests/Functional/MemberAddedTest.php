@@ -23,6 +23,6 @@ class MemberAddedTest extends TestCase
         $this->assertEquals($userId, (int) $user->user_id);
         $this->assertEquals($email, $user->email);
 
-        $this->deleteUser($email);
+        $this->deleteUser($userId);
     }
 }
