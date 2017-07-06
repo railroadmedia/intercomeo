@@ -32,6 +32,8 @@ class TagServiceTest extends TestCase
         sort($tagsStored);
 
         $this->assertEquals($tags, $tagsStored);
+
+        $this->deleteUser($userId);
     }
 
     public function test_add_tags_to_user(){
@@ -77,6 +79,8 @@ class TagServiceTest extends TestCase
         sort($tagsStored);
 
         $this->assertEquals($tags, $tagsStored);
+
+        $this->deleteUser($userId);
     }
 
     public function test_remove_tags_from_user(){
@@ -119,5 +123,7 @@ class TagServiceTest extends TestCase
         sort($tagsStoredAfterUntag);
 
         $this->assertEquals($tagsAfterUntag, $tagsStoredAfterUntag);
+
+        $this->deleteUser($userId);
     }
 }
