@@ -37,7 +37,7 @@ class MemberAddedEventListener
         foreach ($tags as $tag){
             $this->intercomClient->tags->tag([
                 "name" => $tag,
-                "users" => [["email" => $email]] // could use laravel_user_id or intercom user id?
+                "users" => [["user_id" => $userId]] // could use laravel_user_id or intercom user id?
             ]);
         }
 
