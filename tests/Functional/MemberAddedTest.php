@@ -20,13 +20,11 @@ class MemberAddedTest extends TestCase
 
         event(new MemberAdded($userId, $email, $tags));
 
-        $results = $this->queryIntercomUsersTable->select()->where([['email', $email], ['user_id', $userId]])->get();
+        $user = $this->intercomUserRepository->get($email);
 
-        $this->assertCount(1, $results);
-
-        $this->assertEquals($userId, $results->first()->user_id);
-        $this->assertEquals($email, $results->first()->email);
-        $this->assertTrue(!empty($results->first()->intercom_user_id));
+        $this->assertEquals($userId, $user->user_id);
+        $this->assertEquals($email, $user->email);
+        $this->assertTrue(!empty($user->intercom_user_id));
 
         $this->deleteUser($email);
     }

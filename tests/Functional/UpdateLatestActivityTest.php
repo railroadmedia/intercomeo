@@ -4,12 +4,16 @@ namespace Railroad\Intercomeo\Tests;
 
 use Carbon\Carbon;
 use Railroad\Intercomeo\Events\MemberAdded;
+use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use Railroad\Intercomeo\Services\UpdateLatestActivity;
 
 class UpdateLatestActivityTest extends TestCase
 {
     /** @var  UpdateLatestActivity */
     protected $updateLatestActivity;
+
+    /** @var  $intercomUserRepository IntercomUsersRepository */
+    protected $intercomUserRepository;
 
     protected function setUp()
     {
@@ -28,12 +32,9 @@ class UpdateLatestActivityTest extends TestCase
          */
         event(new MemberAdded($userId, $email, []));
 
-        $intercomUserId = $this->queryIntercomUsersTable->select()->where([
-            ['email', $email],
-            ['user_id', $userId]
-        ])->get()->first()->intercom_user_id;
+        $intercomUserId = $this->intercomUserRepository->get($email)->intercom_user_id;
 
-        $this->updateLatestActivity->send($userId);
+        $this->updateLatestActivity->store($userId);
 
         $userReturnedFromIntercom = $this->intercomClient->users->getUser($intercomUserId);
         $timeReturned = Carbon::createFromTimestampUTC($userReturnedFromIntercom->last_request_at);
@@ -54,7 +55,7 @@ class UpdateLatestActivityTest extends TestCase
          */
         event(new MemberAdded($userId, $email, []));
 
-        $intercomUserId = $this->queryIntercomUsersTable->select()->where([['email', $email], ['user_id', $userId]])->get()->first()->intercom_user_id;
+        $intercomUserId = $this->intercomUserRepository->get($email)->intercom_user_id;
 
         /*
          * Not really necessary, we could have just taken the current time with `time()`, but might be
@@ -64,7 +65,7 @@ class UpdateLatestActivityTest extends TestCase
         $knownDate = $knownDate->timezone('UTC');
         Carbon::setTestNow($knownDate);
 
-        $this->updateLatestActivity->send($userId, $knownDate->timestamp);
+        $this->updateLatestActivity->store($userId, $knownDate->timestamp);
 
         $userReturnedFromIntercom = $this->intercomClient->users->getUser($intercomUserId);
 

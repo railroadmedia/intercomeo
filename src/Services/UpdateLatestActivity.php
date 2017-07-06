@@ -25,7 +25,7 @@ class UpdateLatestActivity
      *
      * If the second param is specified it must be a Unix timestamp for the UTC time.
      */
-    public function send($emailOrUserId, $utcTimestamp = null)
+    public function store($emailOrUserId, $utcTimestamp = null)
     {
         $this->intercomClient->users->create([
             is_integer($emailOrUserId) ? 'user_id' : 'email' => $emailOrUserId,

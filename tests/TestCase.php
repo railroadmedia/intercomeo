@@ -7,6 +7,7 @@ use Faker\Generator;
 use Illuminate\Database\DatabaseManager;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
+use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 
 class TestCase extends BaseTestCase
 {
@@ -20,20 +21,14 @@ class TestCase extends BaseTestCase
     protected $databaseManager;
 
     /**
-     * @var \Illuminate\Database\Query\Builder
-     */
-    protected $queryIntercomUsersTable;
-
-    /**
      * @var $intercomClient \Intercom\IntercomClient
      */
     protected $intercomClient;
 
-    /** @var string */
-    protected $email;
-
-    /** @var integer */
-    protected $userId;
+    /**
+     * @var $intercomUserRepository IntercomUsersRepository
+     */
+    protected $intercomUserRepository;
 
     protected function setUp()
     {
@@ -43,10 +38,7 @@ class TestCase extends BaseTestCase
         $this->artisan('cache:clear', []);
 
         $this->faker = $this->app->make(Generator::class);
-        $this->databaseManager = $this->app->make(DatabaseManager::class);
-        $this->queryIntercomUsersTable = $this->databaseManager->connection()->table(
-            config('intercomeo.tables.intercom_users')
-        );
+        $this->intercomUserRepository = new IntercomUsersRepository($this->app->make(DatabaseManager::class));
 
         Carbon::setTestNow(Carbon::now());
 
