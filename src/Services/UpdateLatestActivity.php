@@ -2,18 +2,17 @@
 
 namespace Railroad\Intercomeo\Services;
 
+use Intercom\IntercomClient;
+
 class UpdateLatestActivity
 {
     private $intercomClient;
 
-
-    public function __construct()
+    public function __construct(IntercomClient $intercomClient)
     {
         /*
          * created as singleton in service provide because we need to set the api credentials
          */
-        $intercomClient = resolve('Intercom\IntercomClient');
-
         $this->intercomClient = $intercomClient;
     }
 

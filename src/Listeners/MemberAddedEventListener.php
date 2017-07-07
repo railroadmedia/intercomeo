@@ -3,6 +3,7 @@
 namespace Railroad\Intercomeo\Listeners;
 
 use Illuminate\Database\DatabaseManager;
+use Intercom\IntercomClient;
 use Railroad\Intercomeo\Events\MemberAdded;
 use Railroad\Intercomeo\Services\TagService;
 
@@ -13,6 +14,7 @@ class MemberAddedEventListener
     private $tagService;
 
     public function __construct(
+        IntercomClient $intercomClient,
         DatabaseManager $databaseManager,
         TagService $tagService
     )
@@ -20,9 +22,8 @@ class MemberAddedEventListener
         /*
          * created as singleton in service provide because we need to set the api credentials
          */
-        $intercomClient = resolve('Intercom\IntercomClient');
-
         $this->intercomClient = $intercomClient;
+
         $this->queryIntercomUsersTable = $databaseManager->connection()->table(
             config('intercomeo.tables.intercom_users')
         );
