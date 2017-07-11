@@ -5,30 +5,37 @@ namespace Railroad\Intercomeo\Tests;
 use Carbon\Carbon;
 use Faker\Generator;
 use Illuminate\Database\DatabaseManager;
+use Intercom\IntercomClient;
 use Orchestra\Testbench\TestCase as BaseTestCase;
+use Railroad\Intercomeo\Events\MemberAdded;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
+use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use Railroad\Intercomeo\Services\TagService;
+use Railroad\Intercomeo\Services\UpdateLatestActivity;
 
 class TestCase extends BaseTestCase
 {
-    /**
-     * @var Generator
-     */
+    /** * @var Generator */
     protected $faker;
-    /**
-     * @var DatabaseManager
-     */
+
+    /** * @var DatabaseManager */
     protected $databaseManager;
 
-    /**
-     * @var $intercomClient \Intercom\IntercomClient
-     */
+    /** * @var IntercomClient */
     protected $intercomClient;
 
-    /**
-     * @var $tagService TagService
-     */
+    /** * @var TagService */
     protected $tagService;
+
+    /** @var UpdateLatestActivity */
+    protected $updateLatestActivity;
+
+    /** @var IntercomUsersRepository */
+    protected $usersRepository;
+
+    protected $userId;
+    protected $email;
+    protected $tags;
 
     protected function setUp()
     {
@@ -48,6 +55,28 @@ class TestCase extends BaseTestCase
         $this->intercomClient = $intercomClient;
 
         $this->tagService = $this->app->make(TagService::class);
+
+        $this->updateLatestActivity = $this->app->make(UpdateLatestActivity::class);
+        $this->usersRepository = $this->app->make(IntercomUsersRepository::class);
+
+        $this->userId = $this->faker->randomNumber(6);
+        $this->email = $this->faker->email;
+
+        $numberOfTagsToAdd = rand(1, 3);
+        $this->tags = [];
+
+        for($i = 0; $i < $numberOfTagsToAdd; $i++){
+            $this->tags[] = $this->faker->word;
+        }
+
+        event(new MemberAdded($this->userId, $this->email, $this->tags)); // creates user for test
+    }
+
+    protected function tearDown()
+    {
+        parent::tearDown();
+
+        $this->deleteUser($this->userId);
     }
 
     /**

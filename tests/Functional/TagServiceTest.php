@@ -2,64 +2,18 @@
 
 namespace Railroad\Intercomeo\Tests;
 
-use Railroad\Intercomeo\Events\MemberAdded;
-
 class TagServiceTest extends TestCase
 {
-    protected $tagService;
-
-    protected function setUp()
-    {
-        parent::setUp();
-    }
-
     public function test_get_tags_for_user(){
-        $email = $this->faker->email;
-        $userId = $this->faker->randomNumber(6);
+        $tagsStored = $this->tagService->getTagsForUser($this->userId);
 
-        $numberOfTagsToAdd = rand(1, 9);
-        $tags = [];
-
-        for($i = 0; $i < $numberOfTagsToAdd; $i++){
-            $tags[] = $this->faker->word;
-        }
-
-        event(new MemberAdded($userId, $email, $tags));
-
-        $tagsStored = $this->tagService->getTagsForUser($userId);
-
-        sort($tags);
+        sort($this->tags);
         sort($tagsStored);
 
-        $this->assertEquals($tags, $tagsStored);
-
-        $this->deleteUser($userId);
+        $this->assertEquals($this->tags, $tagsStored);
     }
 
     public function test_add_tags_to_user(){
-        $email = $this->faker->email;
-        $userId = $this->faker->randomNumber(6);
-
-        $numberOfTagsToAdd = rand(1, 3);
-        $tags = [];
-
-        for($i = 0; $i < $numberOfTagsToAdd; $i++){
-            $tags[] = $this->faker->word;
-        }
-
-        event(new MemberAdded($userId, $email, $tags));
-
-        $tagsStored = $this->tagService->getTagsForUser($userId);
-
-        sort($tags);
-        sort($tagsStored);
-
-        $this->assertEquals($tags, $tagsStored);
-
-        /*
-         * ↑ is same as test_get_tags_for_user. New stuff below ↓
-         */
-
         $numberOfTagsToAddInSecondBatch = rand(1, 3);
         $tagsSecondBatch = [];
 
@@ -68,54 +22,29 @@ class TagServiceTest extends TestCase
         }
 
         foreach($tagsSecondBatch as $tagInSecondBatch){
-            $this->tagService->tagUsers($userId, $tagInSecondBatch);
+            $this->tagService->tagUsers($this->userId, $tagInSecondBatch);
         }
 
-        $tags = array_merge($tags, $tagsSecondBatch);
+        $tags = array_merge($this->tags, $tagsSecondBatch);
 
-        $tagsStored = $this->tagService->getTagsForUser($userId);
+        $tagsStored = $this->tagService->getTagsForUser($this->userId);
 
         sort($tags);
         sort($tagsStored);
 
         $this->assertEquals($tags, $tagsStored);
-
-        $this->deleteUser($userId);
     }
 
     public function test_remove_tags_from_user(){
-        $email = $this->faker->email;
-        $userId = $this->faker->randomNumber(6);
+        $randomIndexValue = rand(0, count($this->tags) - 1);
 
-        $numberOfTagsToAdd = rand(1, 3);
-        $tags = [];
+        $tagToRemove = $this->tags[$randomIndexValue];
 
-        for($i = 0; $i < $numberOfTagsToAdd; $i++){
-            $tags[] = $this->faker->word;
-        }
+        $this->tagService->tagUsers($this->userId, $tagToRemove, true);
 
-        event(new MemberAdded($userId, $email, $tags));
+        $tagsStoredAfterUntag = $this->tagService->getTagsForUser($this->userId);
 
-        $tagsStored = $this->tagService->getTagsForUser($userId);
-
-        sort($tags);
-        sort($tagsStored);
-
-        $this->assertEquals($tags, $tagsStored);
-
-        /*
-         * ↑ is same as test_get_tags_for_user. New stuff below ↓
-         */
-
-        $randomIndexValue = rand(0, count($tags) - 1);
-
-        $tagToRemove = $tags[$randomIndexValue];
-
-        $this->tagService->tagUsers($userId, $tagToRemove, true);
-
-        $tagsStoredAfterUntag = $this->tagService->getTagsForUser($userId);
-
-        $tagsAfterUntag = $tags;
+        $tagsAfterUntag = $this->tags;
 
         array_splice($tagsAfterUntag, $randomIndexValue, 1);
 
@@ -123,7 +52,5 @@ class TagServiceTest extends TestCase
         sort($tagsStoredAfterUntag);
 
         $this->assertEquals($tagsAfterUntag, $tagsStoredAfterUntag);
-
-        $this->deleteUser($userId);
     }
 }
