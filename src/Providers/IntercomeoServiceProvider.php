@@ -24,6 +24,11 @@ class IntercomeoServiceProvider extends ServiceProvider
     public function boot()
     {
         parent::boot();
+
+        $destination = __DIR__ . '/../../../../../laravel/config';
+        $origin = __DIR__ . '/../../config';
+        $this->publishes([$origin => $destination]);
+        $this->loadMigrationsFrom(__DIR__ . '/../../migrations');
     }
 
     /**
