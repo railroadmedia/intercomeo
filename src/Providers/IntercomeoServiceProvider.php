@@ -39,7 +39,7 @@ class IntercomeoServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton( 'Intercom\IntercomClient', function ($app){
-            return new IntercomClient(env('INTERCOM_ACCESS_TOKEN'), null);
+            return new IntercomClient(config('intercomeo.access_token'), null);
         } );
     }
 }

@@ -80,6 +80,7 @@ class TestCase extends BaseTestCase
                 'prefix' => '',
             ]
         );
+        $app['config']->set('intercomeo.access_token', env('INTERCOM_ACCESS_TOKEN'));
     }
 
     /**
