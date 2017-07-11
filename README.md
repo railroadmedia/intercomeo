@@ -94,6 +94,36 @@ then save request time (rounded down to the hour — 20:00 for example), and per
 successful Intercom API request.
 
 
+Testing
+-------
+
+### Environmental Variables
+
+To get environmental variables for running your tests, add them to the package's *phpunit.xml* like this:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+    <!-- ... there would likely be things here... -->
+    <php>
+        <!-- ... there would likely be things here... -->
+        <env name="INTERCOM_APP_ID" value="xxxxxx"/>
+        <env name="INTERCOM_HMAC_SECRET" value="xxxxxx"/>
+        <env name="INTERCOM_ACCESS_TOKEN" value="xxxxxx"/>
+    </php>
+</phpunit>
+```
+
+
+### API Secrets for Integration-Testing
+
+Set in *\Railroad\Intercomeo\Tests\**TestCase::getEnvironmentSetUp*** like this:
+
+```php
+$app['config']->set('intercomeo.access_token', env('INTERCOM_ACCESS_TOKEN'));
+```
+
+Don't commit them - remove that file from version control if need be.
+
 
 Questions, Ruminations, Ponderings
 ---------------------------------
