@@ -77,6 +77,32 @@ class LatestActivityServiceTest extends TestCase
 
     public function test_do_no_store_update_last_request_at_when_not_required()
     {
-        $this->markTestIncomplete();
+        $knownTime = Carbon::createFromTimestampUTC(time());
+
+        // some random time rounded down to the hour, and then half an hour added.
+        $knownTimeRoundedDownToHour = $knownTime->copy()->minute(0)->second(0);
+        $firstTimeSet = $this->latestActivityService->calculateTimeToStore(
+            $knownTimeRoundedDownToHour->addMinutes(30)->getTimestamp()
+        );
+
+        $this->latestActivityService->store($this->userId, $firstTimeSet);
+
+        if(config('intercomeo.last_request_buffer_unit') !== LatestActivityService::$timeUnits['hour']){
+            $this->fail('Expected default config value has been overridden somewhere');
+        }
+
+        $secondTimeSet = $firstTimeSet + (600); // 10 minutes
+
+        event(new ApplicationReceivedRequest($this->userId, $secondTimeSet));
+
+        $this->assertNotEquals(
+            $secondTimeSet,
+            $this->intercomService->getLastRequestAt($this->intercomService->getUser($this->userId))
+        );
+
+        $this->assertEquals(
+            $firstTimeSet,
+            $this->intercomService->getLastRequestAt($this->intercomService->getUser($this->userId))
+        );
     }
 }
