@@ -36,9 +36,11 @@ class LatestActivityService
      */
     public function store($userId, $utcTimestamp = null)
     {
+        $utcTimestamp = $utcTimestamp ?? time();
+
         $this->intercomClient->users->create([
             'user_id' => $userId,
-            'last_request_at' => $utcTimestamp ?? time()
+            'last_request_at' => $utcTimestamp
         ]);
 
         $this->intercomUsersRepository->store($userId, $utcTimestamp);
