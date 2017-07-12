@@ -5,6 +5,7 @@ namespace Railroad\Intercomeo\Listeners;
 use Illuminate\Database\DatabaseManager;
 use Intercom\IntercomClient;
 use Railroad\Intercomeo\Events\MemberAdded;
+use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use Railroad\Intercomeo\Services\TagService;
 
 class MemberAddedEventListener
@@ -12,11 +13,20 @@ class MemberAddedEventListener
     private $intercomClient;
     private $queryIntercomUsersTable;
     private $tagService;
+    /**
+     * @var DatabaseManager
+     */
+    private $databaseManager;
+    /**
+     * @var IntercomUsersRepository
+     */
+    private $intercomUsersRepository;
 
     public function __construct(
         IntercomClient $intercomClient,
         DatabaseManager $databaseManager,
-        TagService $tagService
+        TagService $tagService,
+        IntercomUsersRepository $intercomUsersRepository
     )
     {
         /*
@@ -29,6 +39,8 @@ class MemberAddedEventListener
         );
 
         $this->tagService = $tagService;
+        $this->databaseManager = $databaseManager;
+        $this->intercomUsersRepository = $intercomUsersRepository;
     }
 
     public function handle(MemberAdded $event)
@@ -46,6 +58,7 @@ class MemberAddedEventListener
             $this->tagService->tagUsers($userId, $tag);
         }
 
+        $this->intercomUsersRepository->store($userId);
         return true;
     }
 }
