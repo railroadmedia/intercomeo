@@ -3,8 +3,6 @@
 namespace Railroad\Intercomeo\Tests;
 
 use Carbon\Carbon;
-use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
-use Railroad\Intercomeo\Services\UpdateLatestActivity;
 
 class UpdateLatestActivityTest extends TestCase
 {

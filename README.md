@@ -51,20 +51,31 @@ Only one parameter is required. Either the user's email address, or their ID *in
 A second parameter is available if you want to explicitly specify a time to set (rather than have the script just grab a timestamp when it runs - potentially relevant if you have a busy queue with this in the "low priority" pile?).
 
 
-Storing When a User Was Last Active
------------------------------------
+Overview of Functionality
+-------------------------
+
+### Add user to Intercom
+
+Fire `Railroad\Intercomeo\Events\MemberAdded` event, passing in user-id, email, and (optionally) tags for that user.
+
+### Storing When a User Was Last Active
+
+Set `last_request_at` user attribute pass - the user-id and the service will use the current time to set the last_request_at attribute. 
+
+Or you can pass in a specific time (in the form of a UTC timestamp (read: seconds since Unix Epoch)). This might be useful if queuing these jobs and you expect a considerable delay between calling service method and actually storing value.
+
+#### Details
 
 Intercom's user model has a "last_request_at" property ([reference](
-https://developers.intercom.com/v2.0/reference#user-model)). If we were to set this with every request, it would an
-inefficient use of our API rate-limits though. So, we'll decide a "buffer time amount", and save the last_request_time
-with that amount as an acceptable amount of inaccuracy.
+https://developers.intercom.com/v2.0/reference#user-model)). If we were to set this with every request, it would an inefficient use of our API rate-limits though. So, we'll decide a "buffer time amount", and save the last_request_time with that amount as an acceptable amount of inaccuracy.
+
+*You can change this from the default value (of one hour) in the config.*
 
 Say for example we decide on one hour as the "buffer time amount" (BTA)...
 
 The user visits a page. A RailTracker request Event is fired. This triggers an event-listener in the application, 
 
-I'm not sure if we'll do this following in the application or in the Intercomeo package, but anyways this is perhaps how
-it'll work:
+I'm not sure if we'll do this following in the application or in the Intercomeo package, but anyways this is perhaps how it'll work:
 
 (Note that all All time is handled in UTC)
 
@@ -88,10 +99,7 @@ From this we can then create two "time blocks":
 1. 19:00 → 20:00 (this is the "previous time block")
 2. 20:00 → 21:00 (this is the one that "we are in" — as the request time is 20:13)
 
-Then pull from the ~~Railtracker DB~~ **Intercomeo DB** the "last_request_at" for the user_id. If this value is within 
-the current timeblock, do nothing. If that value not in the current timeblock — with because null or an earlier time — 
-then save request time (rounded down to the hour — 20:00 for example), and persist that to our local Intecomeo DB on the
-successful Intercom API request.
+Then pull from the ~~Railtracker DB~~ **Intercomeo DB** the "last_request_at" for the user_id. If this value is within the current timeblock, do nothing. If that value not in the current timeblock — with because null or an earlier time — then save request time (rounded down to the hour — 20:00 for example), and persist that to our local Intecomeo DB on the successful Intercom API request.
 
 
 Testing
