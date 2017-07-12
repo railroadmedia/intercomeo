@@ -5,7 +5,7 @@ namespace Railroad\Intercomeo\Services;
 use Intercom\IntercomClient;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 
-class UpdateLatestActivity
+class LatestActivityService
 {
     private $intercomClient;
     private $usersRepository;

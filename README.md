@@ -44,7 +44,7 @@ Trigger a `Railroad\Intercomeo\Events\MemberAdded` event, passing the user's ema
 Update a user's `last_request_at` attribute
 -------------------------------------------
 
-Do this by calling a `UpdateLatestActivity@send`. You'll need to inject it (`Railroad\Intercomeo\Services\UpdateLatestActivity`) where needed.
+Do this by calling a `LatestActivityService@store`. You'll need to inject it (`Railroad\Intercomeo\Services\UpdateLatestActivity`) where needed.
 
 Only one parameter is required. Either the user's email address, or their ID *in your application* (**not** their Intercom id). The ID must be an integer.
 

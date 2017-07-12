@@ -5,19 +5,19 @@ namespace Railroad\Intercomeo\Tests;
 use Carbon\Carbon;
 use Railroad\Intercomeo\Events\ApplicationReceivedRequest;
 
-class UpdateLatestActivityTest extends TestCase
+class LatestActivityServiceTest extends TestCase
 {
     public function test_store_last_updated_in_database()
     {
         $knownDate = time();
-        $this->updateLatestActivity->store($this->userId, $knownDate);
+        $this->latestActivityService->store($this->userId, $knownDate);
 
         $this->assertEquals($knownDate, $this->usersRepository->getLastRequestAt($this->userId));
     }
 
     public function test_first_store_user_attribute_last_request_at()
     {
-        $this->updateLatestActivity->store($this->userId);
+        $this->latestActivityService->store($this->userId);
 
         $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $this->userId]);
         $timeReturned = Carbon::createFromTimestampUTC($userReturnedFromIntercom->last_request_at);
@@ -30,7 +30,7 @@ class UpdateLatestActivityTest extends TestCase
     {
         $knownDate = time();
 
-        $this->updateLatestActivity->store($this->userId, $knownDate);
+        $this->latestActivityService->store($this->userId, $knownDate);
 
         $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $this->userId]);
 
@@ -41,12 +41,12 @@ class UpdateLatestActivityTest extends TestCase
     {
         $knownDate = time()-10000;
 
-        $this->updateLatestActivity->store($this->userId, $knownDate);
+        $this->latestActivityService->store($this->userId, $knownDate);
 
         $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $this->userId]);
         $this->assertEquals($knownDate, $userReturnedFromIntercom->last_request_at);
 
-        $this->updateLatestActivity->store($this->userId);
+        $this->latestActivityService->store($this->userId);
 
         $this->assertTrue((time() - 10 ) < $this->usersRepository->getLastRequestAt($this->userId));
         $this->assertTrue((time() + 10 ) > $this->usersRepository->getLastRequestAt($this->userId));

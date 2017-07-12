@@ -11,7 +11,7 @@ use Railroad\Intercomeo\Events\MemberAdded;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use Railroad\Intercomeo\Services\TagService;
-use Railroad\Intercomeo\Services\UpdateLatestActivity;
+use Railroad\Intercomeo\Services\LatestActivityService;
 
 class TestCase extends BaseTestCase
 {
@@ -27,8 +27,8 @@ class TestCase extends BaseTestCase
     /** * @var TagService */
     protected $tagService;
 
-    /** @var UpdateLatestActivity */
-    protected $updateLatestActivity;
+    /** @var LatestActivityService */
+    protected $latestActivityService;
 
     /** @var IntercomUsersRepository */
     protected $usersRepository;
@@ -56,7 +56,7 @@ class TestCase extends BaseTestCase
 
         $this->tagService = $this->app->make(TagService::class);
 
-        $this->updateLatestActivity = $this->app->make(UpdateLatestActivity::class);
+        $this->latestActivityService = $this->app->make(LatestActivityService::class);
         $this->usersRepository = $this->app->make(IntercomUsersRepository::class);
 
         $this->userId = $this->faker->randomNumber(6);
