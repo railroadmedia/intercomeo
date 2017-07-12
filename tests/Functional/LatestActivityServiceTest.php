@@ -4,6 +4,7 @@ namespace Railroad\Intercomeo\Tests;
 
 use Carbon\Carbon;
 use Railroad\Intercomeo\Events\ApplicationReceivedRequest;
+use Railroad\Intercomeo\Services\LatestActivityService;
 
 class LatestActivityServiceTest extends TestCase
 {
@@ -54,11 +55,24 @@ class LatestActivityServiceTest extends TestCase
 
     public function test_store_update_last_request_at_when_required()
     {
-        $knownTime = time();
+        $knownTime = Carbon::createFromTimestampUTC(time());
 
-        event(new ApplicationReceivedRequest($this->userId, $knownTime));
+        $this->latestActivityService->store($this->userId, $this->latestActivityService->calculateTimeToStore(
+            $knownTime->copy()->subDay()->getTimestamp()
+        ));
 
+        if(config('intercomeo.last_request_buffer_unit') !== LatestActivityService::$timeUnits['hour']){
+            $this->fail('Expected default config value has been overridden somewhere');
+        }
 
+        $valueBeforeUpdate = $this->intercomService->getLastRequestAt($this->intercomService->getUser($this->userId));
+
+        event(new ApplicationReceivedRequest($this->userId, $knownTime->getTimestamp()));
+
+        $this->assertEquals(
+            Carbon::createFromTimestampUTC($valueBeforeUpdate)->addDay()->getTimestamp(),
+            $this->intercomService->getLastRequestAt($this->intercomService->getUser($this->userId))
+        );
     }
 
     public function test_do_no_store_update_last_request_at_when_not_required()

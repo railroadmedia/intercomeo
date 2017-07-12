@@ -10,6 +10,7 @@ use Orchestra\Testbench\TestCase as BaseTestCase;
 use Railroad\Intercomeo\Events\MemberAdded;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
+use Railroad\Intercomeo\Services\IntercomService;
 use Railroad\Intercomeo\Services\TagService;
 use Railroad\Intercomeo\Services\LatestActivityService;
 
@@ -33,6 +34,9 @@ class TestCase extends BaseTestCase
     /** @var IntercomUsersRepository */
     protected $usersRepository;
 
+    /** @var IntercomService */
+    protected $intercomService;
+
     protected $userId;
     protected $email;
     protected $tags;
@@ -53,6 +57,8 @@ class TestCase extends BaseTestCase
          */
         $intercomClient = resolve('Intercom\IntercomClient');
         $this->intercomClient = $intercomClient;
+
+        $this->intercomService = $this->app->make(IntercomService::class);
 
         $this->tagService = $this->app->make(TagService::class);
 
@@ -110,6 +116,10 @@ class TestCase extends BaseTestCase
             ]
         );
         $app['config']->set('intercomeo.access_token', env('INTERCOM_ACCESS_TOKEN'));
+
+        $app['config']->set('intercomeo.last_request_buffer_amount', (integer) env('LAST_REQUEST_BUFFER_AMOUNT'));
+        $app['config']->set('intercomeo.last_request_buffer_unit', env('LAST_REQUEST_BUFFER_UNIT'));
+        $app['config']->set('intercomeo.level_to_round_down_to', env('LEVEL_TO_ROUND_DOWN_TO'));
     }
 
     /**
