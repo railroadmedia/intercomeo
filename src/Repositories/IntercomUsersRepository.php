@@ -36,13 +36,14 @@ class IntercomUsersRepository
 
     public function store($userId, $lastRequestAt)
     {
-        return $this->query->insert([ 'user_id' => $userId, 'last_request_at' => $lastRequestAt ]);
+        $update = $this->query->where('user_id', $userId)->update(['last_request_at' => $lastRequestAt ]);
+
+        $insert = false;
+
+        if(!$update){
+            $insert = $this->query->insert([ 'user_id' => $userId, 'last_request_at' => $lastRequestAt ]);
+        }
+
+        return $update || $insert;
     }
-
-//    --- No need for "storeLastRequestAt" right now because it's the only column that isn't ID or timestamps ---
-//    public function storeLastRequestAt($userId, $lastRequestAt)
-//    {
-//        return $this->query->update(['user_id' => $userId, 'last_request_at' => $lastRequestAt]);
-//    }
-
 }

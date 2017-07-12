@@ -4,7 +4,9 @@ namespace Railroad\Intercomeo\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Intercom\IntercomClient;
+use Railroad\Intercomeo\Events\ApplicationReceivedRequest;
 use Railroad\Intercomeo\Events\MemberAdded;
+use Railroad\Intercomeo\Listeners\ApplicationReceivedRequestEventListener;
 use Railroad\Intercomeo\Listeners\MemberAddedEventListener;
 
 class IntercomeoServiceProvider extends ServiceProvider
@@ -13,7 +15,8 @@ class IntercomeoServiceProvider extends ServiceProvider
     protected $intercomAccessToken;
 
     protected $listen = [
-        MemberAdded::class => [MemberAddedEventListener::class . '@handle']
+        MemberAdded::class => [MemberAddedEventListener::class . '@handle'],
+        ApplicationReceivedRequest::class => [ApplicationReceivedRequestEventListener::class . '@handle']
     ];
 
     /**
