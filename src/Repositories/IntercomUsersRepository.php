@@ -9,7 +9,9 @@ class IntercomUsersRepository
     public $databaseManager;
     public $query;
 
-    public function __construct(DatabaseManager $databaseManager)
+    public function __construct(
+        DatabaseManager $databaseManager
+    )
     {
         $this->databaseManager = $databaseManager;
 
@@ -31,11 +33,18 @@ class IntercomUsersRepository
     {
         $result = $this->query->where('user_id', $userId)->first();
 
-        return $result->last_request_at;
+        return (integer) $result->last_request_at;
     }
 
-    public function store($userId, $lastRequestAt)
+    /*
+     * $lastRequestAt must be unix timestamp
+     */
+    public function store($userId, $lastRequestAt = null)
     {
+        if(is_null($lastRequestAt)){
+            $lastRequestAt = time();
+        }
+
         $update = $this->query->where('user_id', $userId)->update(['last_request_at' => $lastRequestAt ]);
 
         $insert = false;
