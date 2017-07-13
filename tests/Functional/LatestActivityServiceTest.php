@@ -82,7 +82,7 @@ class LatestActivityServiceTest extends TestCase
         // some random time rounded down to the hour, and then half an hour added.
         $knownTimeRoundedDownToHour = $knownTime->copy()->minute(0)->second(0);
         $firstTimeSet = $this->latestActivityService->calculateTimeToStore(
-            $knownTimeRoundedDownToHour->addMinutes(30)->getTimestamp()
+            $knownTimeRoundedDownToHour->copy()->addMinutes(30)->getTimestamp()
         );
 
         $this->latestActivityService->store($this->userId, $firstTimeSet);
@@ -91,7 +91,7 @@ class LatestActivityServiceTest extends TestCase
             $this->fail('Expected default config value has been overridden somewhere');
         }
 
-        $secondTimeSet = $firstTimeSet + (600); // 10 minutes
+        $secondTimeSet = $knownTimeRoundedDownToHour->copy()->addMinutes(rand(32, 58))->getTimestamp();
 
         event(new ApplicationReceivedRequest($this->userId, $secondTimeSet));
 
