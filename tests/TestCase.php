@@ -7,6 +7,7 @@ use Faker\Generator;
 use Illuminate\Database\DatabaseManager;
 use Intercom\IntercomClient;
 use Orchestra\Testbench\TestCase as BaseTestCase;
+use Railroad\Intercomeo\Commands\PaymentMethodUpcomingExpiryCheck;
 use Railroad\Intercomeo\Events\MemberAdded;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
@@ -37,6 +38,9 @@ class TestCase extends BaseTestCase
     /** @var IntercomService */
     protected $intercomService;
 
+    /** @var PaymentMethodUpcomingExpiryCheck */
+    protected $paymentMethodUpcomingExpiryCheck;
+
     protected $userId;
     protected $email;
     protected $tags;
@@ -58,12 +62,11 @@ class TestCase extends BaseTestCase
         $intercomClient = resolve('Intercom\IntercomClient');
         $this->intercomClient = $intercomClient;
 
-        $this->intercomService = $this->app->make(IntercomService::class);
-
-        $this->tagService = $this->app->make(TagService::class);
-
-        $this->latestActivityService = $this->app->make(LatestActivityService::class);
-        $this->usersRepository = $this->app->make(IntercomUsersRepository::class);
+        $this->intercomService =                    $this->app->make(IntercomService::class);
+        $this->tagService =                         $this->app->make(TagService::class);
+        $this->latestActivityService =              $this->app->make(LatestActivityService::class);
+        $this->usersRepository =                    $this->app->make(IntercomUsersRepository::class);
+        $this->paymentMethodUpcomingExpiryCheck =   $this->app->make(PaymentMethodUpcomingExpiryCheck::class);
 
         $this->userId = $this->faker->randomNumber(6);
         $this->email = $this->faker->email;
