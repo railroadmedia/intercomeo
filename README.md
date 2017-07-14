@@ -16,9 +16,6 @@ Installation
     1. `php artisan migrate`
     1. `php artisan vendor:publish`
 1. Run `composer install` in `railroad/intercomeo` directory.
-1. Register `PaymentMethodUpcomingExpiryCheck` command in your application.
-    1. [RTFM](https://laravel.com/docs/5.4/artisan#registering-commands)
-    1. add to **app/Console/Kernel.php** `$commands` array. (just need this kind of thing: `FooNamespaceBar\BazClassQux::class`)
 1. Integrate into your application by firing and calling `Intercomeo` events and methods (respectively) as needed.
 
 ### Development Installation Note
