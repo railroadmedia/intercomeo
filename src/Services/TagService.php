@@ -39,7 +39,7 @@ class TagService
      * @param array|string $tags
      * @param bool $untag
      *
-     * Will one request *per* tag. Sad!
+     * Makes one request *per* tag. Sad!
      */
     public function tagUsers($userIds, $tags, $untag = false)
     {
@@ -72,7 +72,7 @@ class TagService
      * @param array|integer|string $userIds
      * @param array|string $tags
      *
-     * Will one request *per* tag. Sad!
+     * Makes one request *per* tag. Sad!
      */
     public function untagUsers($userIds, $tags)
     {
