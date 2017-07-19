@@ -35,7 +35,7 @@ class TagService
     }
 
     /**
-     * @param int|string $userIds
+     * @param int|string|array $userIds
      * @param array|string $tags
      * @param bool $untag
      *
