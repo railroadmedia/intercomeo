@@ -2,9 +2,6 @@
 Intercom Integration
 ====================
 
-**Under Construction**
-
-
 Installation
 ------------
 
