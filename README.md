@@ -9,46 +9,13 @@ Installation
 ------------
 
 1. Copy secrets to .env from secure note. The "access token" is key. "App ID" and "HMAC Secret" are optional. 
-1. ~~Add IntercomeoServiceProvider to list of "providers" in `config/app.php`.~~ **(but maybe not because it breaks *composer install*...?)** 
-1. Add to composer.json "require". (**No releases yet... see "Development Installation Note" below**)
+1. Add IntercomeoServiceProvider to list of "providers" in `config/app.php`.
+1. Add to composer.json "require".
 1. In `laravel` directory, run the following:
     1. `composer install`
     1. `php artisan migrate`
     1. `php artisan vendor:publish`
-1. Run `composer install` in `railroad/intercomeo` directory.
 1. Integrate into your application by firing and calling `Intercomeo` events and methods (respectively) as needed.
-
-### Development Installation Note
-
-Composer.json details for your application required for 'Add to composer.json "require"' step above: 
-
-```
-"repositories": [
-    {
-        "type": "path",
-        "url": "../packages/railroad/intercomeo"
-    }
-],
-
-"require": {
-    "railroad/intercomeo": "dev-intercomeo"
-}
-```
-
-Add a user to Intercom
-----------------------
-
-Trigger a `Railroad\Intercomeo\Events\MemberAdded` event, passing the user's email and ID (*in your application* - Intercom will store this as the `user_id`). The third parameter is optional - you can also pass in an array of strings that will be set as tags.
-
-
-Update a user's `last_request_at` attribute
--------------------------------------------
-
-Do this by calling a `LatestActivityService@store`. You'll need to inject it (`Railroad\Intercomeo\Services\UpdateLatestActivity`) where needed.
-
-Only one parameter is required. Either the user's email address, or their ID *in your application* (**not** their Intercom id). The ID must be an integer.
-
-A second parameter is available if you want to explicitly specify a time to set (rather than have the script just grab a timestamp when it runs - potentially relevant if you have a busy queue with this in the "low priority" pile?).
 
 
 Overview of Functionality
@@ -60,9 +27,15 @@ Fire `Railroad\Intercomeo\Events\MemberAdded` event, passing in user-id, email, 
 
 ### Storing When a User Was Last Active
 
-Set `last_request_at` user attribute pass - the user-id and the service will use the current time to set the last_request_at attribute. 
+***Note**: that below the term "user_id" refers to your user's id *in your application* (**not** their Intercom id). We will likely only ever use this "user_id" and very likely have no use for the intercom id.* 
 
-Or you can pass in a specific time (in the form of a UTC timestamp (read: seconds since Unix Epoch)). This might be useful if queuing these jobs and you expect a considerable delay between calling service method and actually storing value.
+Update a user's `last_request_at` attribute call `LatestActivityService@store`. You'll need to inject it (`Railroad\Intercomeo\Services\UpdateLatestActivity`) where needed.
+
+Only one parameter is required; the user's ID . Intercom does allow use of their email, but this package is not configured for that.
+
+The service class in this package will use the current time to generate a time to pass to Intercom to set as the `last_request_at` attribute\*. You decline this by passing in a specific time to use instead (in the form of a UTC timestamp—seconds since Unix Epoch). This might be useful if queuing these jobs and you expect a considerable delay between calling service method and actually storing value.
+
+\* This will be rounded to the next hour to help symbolize (when looking at a number of users) that these are not "organic" times, but rather are "artificially" generated (since we can't update the attribute with every request we have to choose an "acceptable inaccuracy").
 
 #### Details
 
@@ -71,7 +44,7 @@ https://developers.intercom.com/v2.0/reference#user-model)). If we were to set t
 
 *You can change this from the default value (of one hour) in the config.*
 
-Say for example we decide on one hour as the "buffer time amount" (BTA)...
+Say for example we decide on one hour as the "buffer time amount"...
 
 The user visits a page. A RailTracker request Event is fired. This triggers an event-listener in the application, 
 
@@ -99,7 +72,7 @@ From this we can then create two "time blocks":
 1. 19:00 → 20:00 (this is the "previous time block")
 2. 20:00 → 21:00 (this is the one that "we are in" — as the request time is 20:13)
 
-Then pull from the ~~Railtracker DB~~ **Intercomeo DB** the "last_request_at" for the user_id. If this value is within the current timeblock, do nothing. If that value not in the current timeblock — with because null or an earlier time — then save request time (rounded down to the hour — 20:00 for example), and persist that to our local Intecomeo DB on the successful Intercom API request.
+Then pull from the local Intercom***eo*** DB the "last_request_at" for the user_id. If this value is within the current timeblock, do nothing. If that value not in the current timeblock — with because null or an earlier time — then save request time (rounded down to the hour — 20:00 for example), and persist that to our local Intecomeo DB on the successful Intercom API request.
 
 
 Testing
