@@ -22,7 +22,7 @@ class IntercomUsersRepository
 
     /**
      * @param null $userId
-     * @return mixed
+     * @return stdClass
      */
     public function get($userId)
     {
