@@ -27,7 +27,7 @@ class TestCase extends BaseTestCase
     /** * @var TagService */
     protected $tagService;
 
-    /** @var IntercomUsersRepositoryTest */
+    /** @var IntercomUsersRepository */
     protected $usersRepository;
 
     /** @var UserService */
@@ -108,37 +108,39 @@ class TestCase extends BaseTestCase
         $userDeleted = false;
         $atLeastOneDeleteFailed = false;
 
-        foreach($this->userIds as $userId){
-            $this->intercomClient->users->deleteUser('', ['user_id' => $userId]);
+        if(!empty($this->userIds)){
+            foreach($this->userIds as $userId){
+                $this->intercomClient->users->deleteUser('', ['user_id' => $userId]);
 
-            try{
-                $user = $this->intercomClient->users->getUsers(['user_id' => $userId]);
-            }catch (\GuzzleHttp\Exception\RequestException $e){
+                try{
+                    $user = $this->intercomClient->users->getUsers(['user_id' => $userId]);
+                }catch (\GuzzleHttp\Exception\RequestException $e){
 
-                $classIsCorrect = get_class($e) === \GuzzleHttp\Exception\ClientException::class;
+                    $classIsCorrect = get_class($e) === \GuzzleHttp\Exception\ClientException::class;
 
-                $strposOne = strpos(
-                    $e->getMessage(),
-                    'Client error: `GET https://api.intercom.io/users?user_id'
-                );
+                    $strposOne = strpos(
+                        $e->getMessage(),
+                        'Client error: `GET https://api.intercom.io/users?user_id'
+                    );
 
-                $strposTwo = strpos(
-                    $e->getMessage(),
-                    '","errors":[{"code":"not_found","message":"User Not Found"}]}'
-                );
+                    $strposTwo = strpos(
+                        $e->getMessage(),
+                        '","errors":[{"code":"not_found","message":"User Not Found"}]}'
+                    );
 
-                // must be strict, strpos will troll u: php.net/manual/en/function.strpos.php → "Return Values"
-                $errorMessageIsAsExpected = ($strposOne !== false) && ($strposTwo !== false);
+                    // must be strict, strpos will troll u: php.net/manual/en/function.strpos.php → "Return Values"
+                    $errorMessageIsAsExpected = ($strposOne !== false) && ($strposTwo !== false);
 
-                $userDeleted = $classIsCorrect && $errorMessageIsAsExpected;
-            }
+                    $userDeleted = $classIsCorrect && $errorMessageIsAsExpected;
+                }
 
-            $noUserFetched = is_null($user);
+                $noUserFetched = is_null($user);
 
-            $successfulDelete = $noUserFetched && $userDeleted;
+                $successfulDelete = $noUserFetched && $userDeleted;
 
-            if(!$successfulDelete){
-                $atLeastOneDeleteFailed = true;
+                if(!$successfulDelete){
+                    $atLeastOneDeleteFailed = true;
+                }
             }
         }
 
@@ -196,6 +198,18 @@ class TestCase extends BaseTestCase
         }
 
         return ['userId' => $userId, 'email' => $email, 'tags' => $tags];
+    }
+
+    protected function getUserIdForGeneratedUser($user){
+            return $user['userId'];
+    }
+
+    protected function getEmailForGeneratedUser($user){
+            return $user['email'];
+    }
+
+    protected function getTagsForGeneratedUser($user){
+            return $user['tags'];
     }
 
     /**

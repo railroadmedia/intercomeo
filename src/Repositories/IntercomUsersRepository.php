@@ -3,6 +3,7 @@
 namespace Railroad\Intercomeo\Repositories;
 
 use Illuminate\Database\DatabaseManager;
+use stdClass;
 
 class IntercomUsersRepository
 {
