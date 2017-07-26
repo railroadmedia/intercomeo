@@ -24,7 +24,14 @@ class IntercomUsersRepositoryTest extends TestCase
     }
 
     public function test_store_new_user_with_last_request_time_specified(){
-        $this->markTestIncomplete();
+        $userDetails = $this->generateUserDetails();
+        $userId = $this->getUserIdForGeneratedUser($userDetails);
+        $randomTime = rand(2000000000, 1000000000);
+        Carbon::setTestNow(Carbon::createFromTimestampUTC($randomTime));
+        $this->assertTrue($this->usersRepository->store($userId, $randomTime));
+
+        $user = $this->usersRepository->get($userId);
+        $this->assertEquals($randomTime, $user->last_request_at);
     }
 
     public function test_store_last_request_time_for_existing_user(){
