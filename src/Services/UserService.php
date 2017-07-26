@@ -5,28 +5,58 @@ namespace Railroad\Intercomeo\Services;
 use Carbon\Carbon;
 use Intercom\IntercomClient;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
+use stdClass;
 
-class LatestActivityService
+class UserService
 {
-    private $intercomClient;
-    private $intercomUsersRepository;
-
     public static $timeUnits = [
         'day' => 'day',
         'hour' => 'hour',
         'minute' => 'minute'
     ];
 
+    private $intercomClient;
+    private $intercomUsersRepository;
+
+    /*
+     * FYI IntercomClient is created as singleton in service
+     * provide because we need to set the api credentials.
+     */
     public function __construct(
         IntercomClient $intercomClient,
         IntercomUsersRepository $intercomUsersRepository
     )
     {
-        /*
-         * created as singleton in service provide because we need to set the api credentials
-         */
         $this->intercomClient = $intercomClient;
         $this->intercomUsersRepository = $intercomUsersRepository;
+    }
+
+    /**
+     * @param string|integer $userId
+     * @return stdClass|null
+     * @see https://developers.intercom.com/v2.0/reference#user-model
+     */
+    public function getUser($userId)
+    {
+        return $this->intercomClient->users->getUsers(['user_id' => $userId]);
+    }
+
+    /**
+     *
+     * @param stdClass $user
+     * @return integer
+     *
+     * Designed to have the result of the `getUser` method passed in. Example:
+     *
+     *     $lastRequestAt = Carbon::parse(
+     *         $this->userService->getLastRequestAt(
+     *             $this->userService->getUser($userId)
+     *         )
+     *     );
+     */
+    public function getLastRequestAt(stdClass $user)
+    {
+        return (integer) $user->last_request_at;
     }
 
     /**
@@ -102,5 +132,4 @@ class LatestActivityService
     public function calculateLatestActivityTimeToStoreCarbon($utcTimestamp){
         return Carbon::createFromTimestampUTC(self::calculateTimeToStore($utcTimestamp));
     }
-
 }

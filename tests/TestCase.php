@@ -10,7 +10,7 @@ use Orchestra\Testbench\TestCase as BaseTestCase;
 use Railroad\Intercomeo\Events\MemberAdded;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
-use Railroad\Intercomeo\Services\IntercomService;
+use Railroad\Intercomeo\Services\UserService;
 use Railroad\Intercomeo\Services\TagService;
 use Railroad\Intercomeo\Services\LatestActivityService;
 
@@ -34,7 +34,7 @@ class TestCase extends BaseTestCase
     /** @var IntercomUsersRepository */
     protected $usersRepository;
 
-    /** @var IntercomService */
+    /** @var UserService */
     protected $intercomService;
 
     protected $userId;
@@ -58,7 +58,8 @@ class TestCase extends BaseTestCase
         $intercomClient = resolve('Intercom\IntercomClient');
         $this->intercomClient = $intercomClient;
 
-        $this->intercomService = $this->app->make(IntercomService::class);
+        // todo: change to reflect name change to Intercomeo\UserService
+        $this->intercomService = $this->app->make(UserService::class);
 
         $this->tagService = $this->app->make(TagService::class);
 
