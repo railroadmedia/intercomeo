@@ -30,11 +30,13 @@ class IntercomUsersRepository
         return $this->query->where('user_id', $userId)->get()->first();
     }
 
-    public function getLastRequestAt($userId)
+    public function getLastRequestAt($userOrUserId)
     {
-        $result = $this->query->where('user_id', $userId)->first();
+        if(get_class($userOrUserId) == stdClass::class){
+            return (integer) $userOrUserId->last_request_at;
+        }
 
-        return (integer) $result->last_request_at;
+        return (integer) $this->get($userOrUserId)->last_request_at;
     }
 
     /*
