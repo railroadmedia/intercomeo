@@ -33,7 +33,7 @@ class TestCase extends BaseTestCase
     /** @var UserService */
     protected $userService;
 
-    protected $userId;
+    protected $userIds;
     protected $email;
     protected $tags;
 
@@ -57,7 +57,7 @@ class TestCase extends BaseTestCase
     {
         parent::tearDown();
 
-        $this->deleteUser($this->userId);
+        $this->deleteUsers();
     }
 
     /**
@@ -101,45 +101,56 @@ class TestCase extends BaseTestCase
     }
 
     /**
-     * @param string|integer $userId
+     *
      */
-    protected function deleteUser($userId){
+    protected function deleteUsers(){
         $user = null;
         $userDeleted = false;
+        $atLeastOneDeleteFailed = false;
 
-        $this->intercomClient->users->deleteUser('', ['user_id' => $userId]);
+        foreach($this->userIds as $userId){
+            $this->intercomClient->users->deleteUser('', ['user_id' => $userId]);
 
-        try{
-            $user = $this->intercomClient->users->getUsers(['user_id' => $userId]);
-        }catch (\GuzzleHttp\Exception\RequestException $e){
+            try{
+                $user = $this->intercomClient->users->getUsers(['user_id' => $userId]);
+            }catch (\GuzzleHttp\Exception\RequestException $e){
 
-            $classIsCorrect = get_class($e) === \GuzzleHttp\Exception\ClientException::class;
+                $classIsCorrect = get_class($e) === \GuzzleHttp\Exception\ClientException::class;
 
-            $strposOne = strpos(
-                $e->getMessage(),
-                'Client error: `GET https://api.intercom.io/users?user_id'
-            );
+                $strposOne = strpos(
+                    $e->getMessage(),
+                    'Client error: `GET https://api.intercom.io/users?user_id'
+                );
 
-            $strposTwo = strpos(
-                $e->getMessage(),
-                '","errors":[{"code":"not_found","message":"User Not Found"}]}'
-            );
+                $strposTwo = strpos(
+                    $e->getMessage(),
+                    '","errors":[{"code":"not_found","message":"User Not Found"}]}'
+                );
 
-            // must be strict, strpos will troll u: php.net/manual/en/function.strpos.php → "Return Values"
-            $errorMessageIsAsExpected = ($strposOne !== false) && ($strposTwo !== false);
+                // must be strict, strpos will troll u: php.net/manual/en/function.strpos.php → "Return Values"
+                $errorMessageIsAsExpected = ($strposOne !== false) && ($strposTwo !== false);
 
-            $userDeleted = $classIsCorrect && $errorMessageIsAsExpected;
+                $userDeleted = $classIsCorrect && $errorMessageIsAsExpected;
+            }
+
+            $noUserFetched = is_null($user);
+
+            $successfulDelete = $noUserFetched && $userDeleted;
+
+            if(!$successfulDelete){
+                $atLeastOneDeleteFailed = true;
+            }
         }
 
-        $noUserFetched = is_null($user);
-
-        $successfulDelete = $noUserFetched && $userDeleted;
-
-        if(!$successfulDelete){
+        if($atLeastOneDeleteFailed){
             // No need to add another assertion to every test. Just cause to test to fail if this does.
-            $this->assertTrue($successfulDelete);
+            $this->assertFalse($atLeastOneDeleteFailed);
         }
     }
+
+    // ↑ Methods above run automatically on every test.
+
+    // ↓ Methods above are called only where they were added by the developer in specific test-cases.
 
     /**
      * @return IntercomClient
@@ -195,6 +206,8 @@ class TestCase extends BaseTestCase
      * creates in external service for integration testing
      */
     protected function createUser($userId, $email, $tags){
+        $this->userIds[] = $userId;
+
         event(new MemberAdded($userId, $email, $tags));
     }
 
