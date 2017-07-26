@@ -1,6 +1,6 @@
 <?php
 
-use Railroad\Intercomeo\Services\LatestActivityService;
+use Railroad\Intercomeo\Services\UserService;
 
 return [
     'tables' => [
@@ -8,6 +8,6 @@ return [
     ],
     'access_token' => 'YOUR ACCESS TOKEN HERE',
     'last_request_buffer_amount' => 1,
-    'last_request_buffer_unit' => LatestActivityService::$timeUnits['hour'],
-    'level_to_round_down_to' => LatestActivityService::$timeUnits['hour']
+    'last_request_buffer_unit' => UserService::$timeUnits['hour'],
+    'level_to_round_down_to' => UserService::$timeUnits['hour']
 ];

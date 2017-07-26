@@ -59,7 +59,6 @@ class TestCase extends BaseTestCase
 
         $this->tagService = $this->app->make(TagService::class);
 
-        $this->latestActivityService = $this->app->make(LatestActivityService::class);
         $this->usersRepository = $this->app->make(IntercomUsersRepository::class);
 
         $this->userId = $this->faker->randomNumber(6);

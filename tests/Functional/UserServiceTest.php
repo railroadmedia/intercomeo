@@ -11,14 +11,14 @@ class UserServiceTest extends TestCase
     public function test_store_last_updated_in_database()
     {
         $knownDate = time();
-        $this->userService->store($this->userId, $knownDate);
+        $this->userService->storeLatestActivity($this->userId, $knownDate);
 
         $this->assertEquals($knownDate, $this->usersRepository->getLastRequestAt($this->userId));
     }
 
     public function test_first_store_user_attribute_last_request_at()
     {
-        $this->userService->store($this->userId);
+        $this->userService->storeLatestActivity($this->userId);
 
         $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $this->userId]);
         $timeReturned = Carbon::createFromTimestampUTC($userReturnedFromIntercom->last_request_at);
@@ -31,7 +31,7 @@ class UserServiceTest extends TestCase
     {
         $knownDate = time();
 
-        $this->userService->store($this->userId, $knownDate);
+        $this->userService->storeLatestActivity($this->userId, $knownDate);
 
         $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $this->userId]);
 
@@ -42,12 +42,12 @@ class UserServiceTest extends TestCase
     {
         $knownDate = time()-10000;
 
-        $this->userService->store($this->userId, $knownDate);
+        $this->userService->storeLatestActivity($this->userId, $knownDate);
 
         $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $this->userId]);
         $this->assertEquals($knownDate, $userReturnedFromIntercom->last_request_at);
 
-        $this->userService->store($this->userId);
+        $this->userService->storeLatestActivity($this->userId);
 
         $this->assertTrue((time() - 10 ) < $this->usersRepository->getLastRequestAt($this->userId));
         $this->assertTrue((time() + 10 ) > $this->usersRepository->getLastRequestAt($this->userId));
@@ -57,7 +57,7 @@ class UserServiceTest extends TestCase
     {
         $knownTime = Carbon::createFromTimestampUTC(time());
 
-        $this->userService->store($this->userId, $this->userService->calculateTimeToStore(
+        $this->userService->storeLatestActivity($this->userId, $this->userService->calculateLatestActivityTimeToStore(
             $knownTime->copy()->subDay()->getTimestamp()
         ));
 
@@ -81,11 +81,11 @@ class UserServiceTest extends TestCase
 
         // some random time rounded down to the hour, and then half an hour added.
         $knownTimeRoundedDownToHour = $knownTime->copy()->minute(0)->second(0);
-        $firstTimeSet = $this->userService->calculateTimeToStore(
+        $firstTimeSet = $this->userService->calculateLatestActivityTimeToStore(
             $knownTimeRoundedDownToHour->copy()->addMinutes(30)->getTimestamp()
         );
 
-        $this->userService->store($this->userId, $firstTimeSet);
+        $this->userService->storeLatestActivity($this->userId, $firstTimeSet);
 
         if(config('intercomeo.last_request_buffer_unit') !== UserService::$timeUnits['hour']){
             $this->fail('Expected default config value has been overridden somewhere');

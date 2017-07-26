@@ -5,7 +5,7 @@ namespace Railroad\Intercomeo\Listeners;
 use Carbon\Carbon;
 use Railroad\Intercomeo\Events\ApplicationReceivedRequest;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
-use Railroad\Intercomeo\Services\LatestActivityService;
+use Railroad\Intercomeo\Services\UserService;
 
 class ApplicationReceivedRequestEventListener
 {
@@ -15,17 +15,17 @@ class ApplicationReceivedRequestEventListener
     private $intercomUsersRepository;
 
     /**
-     * @var LatestActivityService
+     * @var UserService
      */
-    private $latestActivityService;
+    private $userService;
 
     public function __construct(
         IntercomUsersRepository $intercomUsersRepository,
-        LatestActivityService $latestActivityService
+        UserService $userService
     )
     {
         $this->intercomUsersRepository = $intercomUsersRepository;
-        $this->latestActivityService = $latestActivityService;
+        $this->userService = $userService;
     }
 
     public function handle(ApplicationReceivedRequest $applicationReceivedRequest)
@@ -47,10 +47,10 @@ class ApplicationReceivedRequestEventListener
             $utcTimestamp = time();
         }
 
-        $time = $this->latestActivityService->calculateTimeToStoreCarbon($utcTimestamp);
+        $time = $this->userService->calculateLatestActivityTimeToStoreCarbon($utcTimestamp);
 
         if($lastRequestAt->lt($time)){
-            $this->latestActivityService->store($userId, $time->timestamp);
+            $this->userService->storeLatestActivity($userId, $time->timestamp);
         }
     }
 }

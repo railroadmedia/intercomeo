@@ -130,6 +130,6 @@ class UserService
      * @return Carbon
      */
     public function calculateLatestActivityTimeToStoreCarbon($utcTimestamp){
-        return Carbon::createFromTimestampUTC(self::calculateTimeToStore($utcTimestamp));
+        return Carbon::createFromTimestampUTC(self::calculateLatestActivityTimeToStore($utcTimestamp));
     }
 }
