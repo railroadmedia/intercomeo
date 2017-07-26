@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Jon
- * Date: 7/26/2017
- * Time: 9:51 AM
- */
 
 namespace Railroad\Intercomeo\Tests;
-
 
 class IntercomUsersRepository extends TestCase
 {
