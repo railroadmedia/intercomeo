@@ -47,8 +47,4 @@ class IntercomUsersRepositoryTest extends TestCase
         $user = $this->usersRepository->get($userId);
         $this->assertEquals($randomTime, $user->last_request_at);
     }
-
-    public function test_store_fails_gracefully_if_last_request_input_malformed(){
-        $this->markTestIncomplete();
-    }
 }
