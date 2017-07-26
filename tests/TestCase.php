@@ -46,32 +46,64 @@ class TestCase extends BaseTestCase
 
         $this->faker = $this->app->make(Generator::class);
 
-        Carbon::setTestNow(Carbon::now());
+        $this->userService = $this->app->make(UserService::class);
+        $this->tagService = $this->app->make(TagService::class);
+        $this->usersRepository = $this->app->make(IntercomUsersRepository::class);
 
+        Carbon::setTestNow(Carbon::now());
+    }
+
+    /**
+     * @return IntercomClient
+     */
+    protected function instantiateIntercomClient(){
         /*
          * created as singleton in service provide because we need to set the api credentials
          */
-        $intercomClient = resolve('Intercom\IntercomClient');
-        $this->intercomClient = $intercomClient;
+        return resolve('Intercom\IntercomClient');
+    }
 
-        // todo: change to reflect name change to Intercomeo\UserService
-        $this->userService = $this->app->make(UserService::class);
+    /**
+     * @param null $userId
+     * @param null $email
+     * @param null $tags
+     * @param null $numberOfTagsToAdd
+     * @return array
+     */
+    protected function generateUserDetails(
+        $userId = null,
+        $email = null,
+        $tags = null,
+        $numberOfTagsToAdd = null
+    ){
 
-        $this->tagService = $this->app->make(TagService::class);
-
-        $this->usersRepository = $this->app->make(IntercomUsersRepository::class);
-
-        $this->userId = $this->faker->randomNumber(6);
-        $this->email = $this->faker->email;
-
-        $numberOfTagsToAdd = rand(1, 3);
-        $this->tags = [];
-
-        for($i = 0; $i < $numberOfTagsToAdd; $i++){
-            $this->tags[] = $this->faker->word;
+        if(empty($userId)){
+            $userId = $this->faker->randomNumber(6);
         }
 
-        event(new MemberAdded($this->userId, $this->email, $this->tags)); // creates user for test
+        if(empty($email)){
+            $email = $this->faker->email;
+        }
+
+
+        if(empty($tags)){
+            $tags = [];
+            if(empty($numberOfTagsToAdd)){
+                $numberOfTagsToAdd = rand(1, 3);
+            }
+            for($i = 0; $i < $numberOfTagsToAdd; $i++){
+                $tags[] = $this->faker->word;
+            }
+        }
+
+        return ['userId' => $userId, 'email' => $email, 'tags' => $tags];
+    }
+
+    /*
+     * creates in external service for integration testing
+     */
+    protected function createUser($userId, $email, $tags){
+        event(new MemberAdded($userId, $email, $tags));
     }
 
     protected function tearDown()
