@@ -26,7 +26,7 @@ Fire `Railroad\Intercomeo\Events\MemberAdded` event, passing in user-id, email, 
 
 ***Note**: that below the term "user_id" refers to your user's id *in your application* (**not** their Intercom id). We will likely only ever use this "user_id" and very likely have no use for the intercom id.* 
 
-Update a user's `last_request_at` attribute call `LatestActivityService@store`. You'll need to inject it (`Railroad\Intercomeo\Services\UpdateLatestActivity`) where needed.
+To update a user's `last_request_at` attribute call `UserService@storeLatestActivity`.
 
 Only one parameter is required; the user's ID . Intercom does allow use of their email, but this package is not configured for that.
 

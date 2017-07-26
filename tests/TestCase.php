@@ -12,7 +12,6 @@ use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use Railroad\Intercomeo\Services\UserService;
 use Railroad\Intercomeo\Services\TagService;
-use Railroad\Intercomeo\Services\LatestActivityService;
 
 class TestCase extends BaseTestCase
 {
@@ -28,14 +27,11 @@ class TestCase extends BaseTestCase
     /** * @var TagService */
     protected $tagService;
 
-    /** @var LatestActivityService */
-    protected $latestActivityService;
-
     /** @var IntercomUsersRepository */
     protected $usersRepository;
 
     /** @var UserService */
-    protected $intercomService;
+    protected $userService;
 
     protected $userId;
     protected $email;
@@ -59,7 +55,7 @@ class TestCase extends BaseTestCase
         $this->intercomClient = $intercomClient;
 
         // todo: change to reflect name change to Intercomeo\UserService
-        $this->intercomService = $this->app->make(UserService::class);
+        $this->userService = $this->app->make(UserService::class);
 
         $this->tagService = $this->app->make(TagService::class);
 
