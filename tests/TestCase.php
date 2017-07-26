@@ -27,7 +27,7 @@ class TestCase extends BaseTestCase
     /** * @var TagService */
     protected $tagService;
 
-    /** @var IntercomUsersRepository */
+    /** @var IntercomUsersRepositoryTest */
     protected $usersRepository;
 
     /** @var UserService */
@@ -51,6 +51,94 @@ class TestCase extends BaseTestCase
         $this->usersRepository = $this->app->make(IntercomUsersRepository::class);
 
         Carbon::setTestNow(Carbon::now());
+    }
+
+    protected function tearDown()
+    {
+        parent::tearDown();
+
+        $this->deleteUser($this->userId);
+    }
+
+    /**
+     * @param \Illuminate\Foundation\Application $app
+     * @return array
+     */
+    protected function getPackageProviders($app)
+    {
+        return [IntercomeoServiceProvider::class];
+    }
+
+    /**
+     * Define environment setup.
+     *
+     * @param  \Illuminate\Foundation\Application $app
+     * @return void
+     */
+    protected function getEnvironmentSetUp($app)
+    {
+        $defaultConfig = require(__DIR__ . '/../config/intercomeo.php');
+
+        $app['config']->set('intercomeo.tables', $defaultConfig['tables']);
+        $app['config']->set('intercomeo.database_connection_name', 'testbench');
+        $app['config']->set('database.default', 'testbench');
+        $app['config']->set(
+            'database.connections.testbench',
+            [
+                'driver' => 'sqlite',
+                'database' => ':memory:',
+                'prefix' => '',
+            ]
+        );
+        $app['config']->set('intercomeo.access_token', env('INTERCOM_ACCESS_TOKEN'));
+
+        $app['config']->set(
+            'intercomeo.last_request_buffer_amount',
+            (integer) env('LAST_REQUEST_BUFFER_AMOUNT')
+        );
+        $app['config']->set('intercomeo.last_request_buffer_unit', env('LAST_REQUEST_BUFFER_UNIT'));
+        $app['config']->set('intercomeo.level_to_round_down_to', env('LEVEL_TO_ROUND_DOWN_TO'));
+    }
+
+    /**
+     * @param string|integer $userId
+     */
+    protected function deleteUser($userId){
+        $user = null;
+        $userDeleted = false;
+
+        $this->intercomClient->users->deleteUser('', ['user_id' => $userId]);
+
+        try{
+            $user = $this->intercomClient->users->getUsers(['user_id' => $userId]);
+        }catch (\GuzzleHttp\Exception\RequestException $e){
+
+            $classIsCorrect = get_class($e) === \GuzzleHttp\Exception\ClientException::class;
+
+            $strposOne = strpos(
+                $e->getMessage(),
+                'Client error: `GET https://api.intercom.io/users?user_id'
+            );
+
+            $strposTwo = strpos(
+                $e->getMessage(),
+                '","errors":[{"code":"not_found","message":"User Not Found"}]}'
+            );
+
+            // must be strict, strpos will troll u: php.net/manual/en/function.strpos.php → "Return Values"
+            $errorMessageIsAsExpected = ($strposOne !== false) && ($strposTwo !== false);
+
+            $userDeleted = $classIsCorrect && $errorMessageIsAsExpected;
+        }
+
+        $noUserFetched = is_null($user);
+
+        $successfulDelete = $noUserFetched && $userDeleted;
+
+        if(!$successfulDelete){
+            // No need to add another assertion to every test. Just cause to test to fail if this does.
+            $this->assertTrue($successfulDelete);
+        }
     }
 
     /**
@@ -99,95 +187,15 @@ class TestCase extends BaseTestCase
         return ['userId' => $userId, 'email' => $email, 'tags' => $tags];
     }
 
-    /*
+    /**
+     * @param $userId
+     * @param $email
+     * @param $tags
+     *
      * creates in external service for integration testing
      */
     protected function createUser($userId, $email, $tags){
         event(new MemberAdded($userId, $email, $tags));
     }
 
-    protected function tearDown()
-    {
-        parent::tearDown();
-
-        $this->deleteUser($this->userId);
-    }
-
-    /**
-     * @param \Illuminate\Foundation\Application $app
-     * @return array
-     */
-    protected function getPackageProviders($app)
-    {
-        return [IntercomeoServiceProvider::class];
-    }
-
-    /**
-     * Define environment setup.
-     *
-     * @param  \Illuminate\Foundation\Application $app
-     * @return void
-     */
-    protected function getEnvironmentSetUp($app)
-    {
-        $defaultConfig = require(__DIR__ . '/../config/intercomeo.php');
-
-        $app['config']->set('intercomeo.tables', $defaultConfig['tables']);
-        $app['config']->set('intercomeo.database_connection_name', 'testbench');
-        $app['config']->set('database.default', 'testbench');
-        $app['config']->set(
-            'database.connections.testbench',
-            [
-                'driver' => 'sqlite',
-                'database' => ':memory:',
-                'prefix' => '',
-            ]
-        );
-        $app['config']->set('intercomeo.access_token', env('INTERCOM_ACCESS_TOKEN'));
-
-        $app['config']->set('intercomeo.last_request_buffer_amount', (integer) env('LAST_REQUEST_BUFFER_AMOUNT'));
-        $app['config']->set('intercomeo.last_request_buffer_unit', env('LAST_REQUEST_BUFFER_UNIT'));
-        $app['config']->set('intercomeo.level_to_round_down_to', env('LEVEL_TO_ROUND_DOWN_TO'));
-    }
-
-    /**
-     * @param string|integer $userId
-     */
-    protected function deleteUser($userId){
-        $user = null;
-        $userDeleted = false;
-
-        $this->intercomClient->users->deleteUser('', ['user_id' => $userId]);
-
-        try{
-            $user = $this->intercomClient->users->getUsers(['user_id' => $userId]);
-        }catch (\GuzzleHttp\Exception\RequestException $e){
-
-            $classIsCorrect = get_class($e) === \GuzzleHttp\Exception\ClientException::class;
-
-            $strposOne = strpos(
-                $e->getMessage(),
-                'Client error: `GET https://api.intercom.io/users?user_id'
-            );
-
-            $strposTwo = strpos(
-                $e->getMessage(),
-                '","errors":[{"code":"not_found","message":"User Not Found"}]}'
-            );
-
-            // must be strict, strpos will troll u: php.net/manual/en/function.strpos.php → "Return Values"
-            $errorMessageIsAsExpected = ($strposOne !== false) && ($strposTwo !== false);
-
-            $userDeleted = $classIsCorrect && $errorMessageIsAsExpected;
-        }
-
-        $noUserFetched = is_null($user);
-
-        $successfulDelete = $noUserFetched && $userDeleted;
-
-        if(!$successfulDelete){
-            // No need to add another assertion to every test. Just cause to test to fail if this does.
-            $this->assertTrue($successfulDelete);
-        }
-    }
 }

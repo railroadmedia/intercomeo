@@ -2,7 +2,7 @@
 
 namespace Railroad\Intercomeo\Tests;
 
-class IntercomUsersRepository extends TestCase
+class IntercomUsersRepositoryTest extends TestCase
 {
     public function test_store_new_user(){
         $this->markTestIncomplete();
