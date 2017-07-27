@@ -26,25 +26,66 @@ class TagServiceTest extends TestCase
     }
 
     public function test_add_tags_to_user(){
-        $numberOfTagsToAddInSecondBatch = rand(1, 3);
-        $tagsSecondBatch = [];
+//        $numberOfTagsToAddInSecondBatch = rand(1, 3);
+//        $tagsSecondBatch = [];
+//
+//        for($i = 0; $i < $numberOfTagsToAddInSecondBatch; $i++){
+//            $tagsSecondBatch[] = $this->faker->word;
+//        }
+//
+//        foreach($tagsSecondBatch as $tagInSecondBatch){
+//            $this->tagService->tagUsers($this->userId, $tagInSecondBatch);
+//        }
+//
+//        $tags = array_merge($this->tags, $tagsSecondBatch);
+//
+//        $tagsStored = $this->tagService->getTagsForUser($this->userId);
+//
+//        sort($tags);
+//        sort($tagsStored);
+//
+//        $this->assertEquals($tags, $tagsStored);
+    }
 
-        for($i = 0; $i < $numberOfTagsToAddInSecondBatch; $i++){
-            $tagsSecondBatch[] = $this->faker->word;
-        }
+    public function test_add_single_tag_to_single_user_passed_as_int()
+    {
+        $userDetails = $this->generateUserDetails();
 
-        foreach($tagsSecondBatch as $tagInSecondBatch){
-            $this->tagService->tagUsers($this->userId, $tagInSecondBatch);
-        }
+        $userId = $this->getUserIdForGeneratedUser($userDetails);
+        $tags = $this->getTagsForGeneratedUser($userDetails);
 
-        $tags = array_merge($this->tags, $tagsSecondBatch);
+        $this->tagService->tagUsers($userId, $tags);
+    }
 
-        $tagsStored = $this->tagService->getTagsForUser($this->userId);
+    public function test_add_single_tag_to_single_user_passed_in_array()
+    {
+        $userDetails = $this->generateUserDetails();
 
-        sort($tags);
-        sort($tagsStored);
+        $userId = $this->getUserIdForGeneratedUser($userDetails);
+        $tags = $this->getTagsForGeneratedUser($userDetails);
 
-        $this->assertEquals($tags, $tagsStored);
+        $this->tagService->tagUsers([$userId], $tags);
+
+        $user = $this->userService->getUser($userId);
+
+        $this->assertIsUser($user);
+
+        $this->assertEquals($tags, $user->tags);
+    }
+
+    public function test_add_single_tag_to_multiple_user()
+    {
+        $this->markTestIncomplete();
+    }
+
+    public function test_add_multiple_tags_to_single_users()
+    {
+        $this->markTestIncomplete();
+    }
+
+    public function test_add_multiple_tags_to_multiple_users()
+    {
+        $this->markTestIncomplete();
     }
 
     public function test_remove_tags_from_user(){
