@@ -3,6 +3,7 @@
 namespace Railroad\Intercomeo\Services;
 
 use Carbon\Carbon;
+use Exception;
 use Intercom\IntercomClient;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use stdClass;
@@ -17,7 +18,6 @@ class IntercomeoService
 
     private $intercomClient;
     private $intercomUsersRepository;
-    private $tagService;
 
     /*
      * FYI IntercomClient is created as singleton in service
@@ -25,13 +25,11 @@ class IntercomeoService
      */
     public function __construct(
         IntercomClient $intercomClient,
-        IntercomUsersRepository $intercomUsersRepository,
-        TagService $tagService
+        IntercomUsersRepository $intercomUsersRepository
     )
     {
         $this->intercomClient = $intercomClient;
         $this->intercomUsersRepository = $intercomUsersRepository;
-        $this->tagService = $tagService;
     }
 
     /*
@@ -71,7 +69,7 @@ class IntercomeoService
         }
 
         if(!is_null($tags)){
-            $successfulCreation = $this->tagService->tagUsers($successfullyCreated, $tags);
+            $successfulCreation = $this->tagUsers($successfullyCreated, $tags);
 
             if(!$successfulCreation){
                 $creationFailed = true;
@@ -90,28 +88,36 @@ class IntercomeoService
      */
     public function getUser($userId)
     {
-        return $this->intercomClient->users->getUsers(['user_id' => $userId]);
+        $user = null;
+
+        try {
+            $user = $this->intercomClient->users->getUsers(['user_id' => $userId]);
+        } catch (Exception $e) {
+            return $user;
+        }
+
+        return $user;
     }
 
     public function doesUserExistInIntercomAlready($userId)
     {
-        $userRow = $this->intercomUsersRepository->get($userId);
+        $exists = !empty($this->intercomUsersRepository->get($userId));
 
-        if(empty($userRow)){
+        if(!$exists){
 
             $user = $this->getUser($userId);
 
-            $exists = (
-                ($user->type === 'user') &&
-                ($user->user_id === $userId) &&
-                !empty($user->id) &&
-                ($user->app_id === config('intercomeo.app_id'))
-            );
-
-            return $exists;
+            if(!empty($user)){
+                $exists = (
+                    ($user->type === 'user') &&
+                    ($user->user_id === $userId) &&
+                    !empty($user->id) &&
+                    ($user->app_id === config('intercomeo.app_id'))
+                );
+            }
         }
 
-        return true;
+        return $exists;
     }
 
     /**

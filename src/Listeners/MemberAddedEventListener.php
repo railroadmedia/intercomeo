@@ -6,26 +6,20 @@ use Illuminate\Database\DatabaseManager;
 use Intercom\IntercomClient;
 use Railroad\Intercomeo\Events\MemberAdded;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
-use Railroad\Intercomeo\Services\TagService;
+use Railroad\Intercomeo\Services\IntercomeoService;
 
 class MemberAddedEventListener
 {
     private $intercomClient;
     private $queryIntercomUsersTable;
-    private $tagService;
-    /**
-     * @var DatabaseManager
-     */
     private $databaseManager;
-    /**
-     * @var IntercomUsersRepository
-     */
     private $intercomUsersRepository;
+    private $intercomeoService;
 
     public function __construct(
         IntercomClient $intercomClient,
         DatabaseManager $databaseManager,
-        TagService $tagService,
+        IntercomeoService $intercomeoService,
         IntercomUsersRepository $intercomUsersRepository
     )
     {
@@ -38,8 +32,8 @@ class MemberAddedEventListener
             config('intercomeo.tables.intercom_users')
         );
 
-        $this->tagService = $tagService;
         $this->databaseManager = $databaseManager;
+        $this->intercomeoService = $intercomeoService;
         $this->intercomUsersRepository = $intercomUsersRepository;
     }
 
@@ -49,16 +43,19 @@ class MemberAddedEventListener
         $email = $event->email;
         $tags = $event->tags;
 
-        $this->intercomClient->users->create([
-            "email" => $email,
-            "user_id" => $userId
-        ]);
+        if(!$this->intercomeoService->doesUserExistInIntercomAlready($userId)){
+            $this->intercomClient->users->create([
+                "email" => $email,
+                "user_id" => $userId
+            ]);
 
-        foreach ($tags as $tag){
-            $this->tagService->tagUsers($userId, $tag);
+            $this->intercomUsersRepository->store($userId);
         }
 
-        $this->intercomUsersRepository->store($userId);
+        foreach ($tags as $tag){
+            $this->intercomeoService->tagUsers($userId, $tag);
+        }
+
         return true;
     }
 }

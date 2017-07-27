@@ -11,7 +11,6 @@ use Railroad\Intercomeo\Events\MemberAdded;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use Railroad\Intercomeo\Services\IntercomeoService;
-use Railroad\Intercomeo\Services\TagService;
 use stdClass;
 
 class TestCase extends BaseTestCase

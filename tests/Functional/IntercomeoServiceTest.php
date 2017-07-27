@@ -15,7 +15,9 @@ class IntercomeoServiceTest extends TestCase
 
         $this->intercomeoService->createUsers($userId);
 
-        $this->markTestIncomplete();
+        $userReturnedFromIntercom = $this->intercomeoService->getUser($userId);
+
+        $this->assertEquals($userId, $userReturnedFromIntercom->user_id);
     }
 
     public function test_create_users_multiple_users()
