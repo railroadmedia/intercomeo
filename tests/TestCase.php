@@ -10,7 +10,7 @@ use Orchestra\Testbench\TestCase as BaseTestCase;
 use Railroad\Intercomeo\Events\MemberAdded;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
-use Railroad\Intercomeo\Services\UserService;
+use Railroad\Intercomeo\Services\IntercomeoService;
 use Railroad\Intercomeo\Services\TagService;
 use stdClass;
 
@@ -28,6 +28,9 @@ class TestCase extends BaseTestCase
     /** @var IntercomUsersRepository */
     protected $usersRepository;
 
+    /** @var IntercomeoService $intercomeoService */
+    protected $intercomeoService;
+
     protected $userIds;
     protected $email;
     protected $tags;
@@ -40,8 +43,8 @@ class TestCase extends BaseTestCase
         $this->artisan('cache:clear', []);
 
         $this->faker = $this->app->make(Generator::class);
-
         $this->usersRepository = $this->app->make(IntercomUsersRepository::class);
+        $this->intercomeoService = $this->app->make(IntercomeoService::class);
 
         Carbon::setTestNow(Carbon::now());
     }

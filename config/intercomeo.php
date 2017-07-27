@@ -1,6 +1,6 @@
 <?php
 
-use Railroad\Intercomeo\Services\UserService;
+use Railroad\Intercomeo\Services\IntercomeoService;
 
 return [
     'tables' => [
@@ -10,6 +10,6 @@ return [
     'hmac_secret' => 'YOUR HMAC SECRET HERE',
     'access_token' => 'YOUR ACCESS TOKEN HERE',
     'last_request_buffer_amount' => 1,
-    'last_request_buffer_unit' => UserService::$timeUnits['hour'],
-    'level_to_round_down_to' => UserService::$timeUnits['hour']
+    'last_request_buffer_unit' => IntercomeoService::$timeUnits['hour'],
+    'level_to_round_down_to' => IntercomeoService::$timeUnits['hour']
 ];

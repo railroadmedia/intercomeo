@@ -5,7 +5,7 @@ namespace Railroad\Intercomeo\Listeners;
 use Carbon\Carbon;
 use Railroad\Intercomeo\Events\ApplicationReceivedRequest;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
-use Railroad\Intercomeo\Services\UserService;
+use Railroad\Intercomeo\Services\IntercomeoService;
 
 class ApplicationReceivedRequestEventListener
 {
@@ -15,13 +15,13 @@ class ApplicationReceivedRequestEventListener
     private $intercomUsersRepository;
 
     /**
-     * @var UserService
+     * @var IntercomeoService
      */
     private $userService;
 
     public function __construct(
         IntercomUsersRepository $intercomUsersRepository,
-        UserService $userService
+        IntercomeoService $userService
     )
     {
         $this->intercomUsersRepository = $intercomUsersRepository;
