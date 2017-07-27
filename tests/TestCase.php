@@ -222,12 +222,18 @@ class TestCase extends BaseTestCase
         event(new MemberAdded($userId, $email, $tags));
     }
 
-    protected function assertIsUser(stdClass $user){
+    /**
+     * @param stdClass $user
+     * @param null|string|int $userId
+     */
+    protected function assertIsUser(stdClass $user, $userId = null){
         $this->assertTrue(
             (
                 ($user->type === 'user')
                 &&
                 !empty($user->id)
+                &&
+                !is_null($userId) ? $user->user_id == $userId : true
                 &&
                 ($user->app_id === config('intercomeo.app_id'))
             )
