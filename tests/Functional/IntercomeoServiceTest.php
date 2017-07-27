@@ -22,6 +22,21 @@ class IntercomeoServiceTest extends TestCase
 
     public function test_create_users_multiple_users()
     {
+        $numberToCreate = rand(3, 6);
+        $userDetails = [];
+        for ($i = 1; $i <= $numberToCreate; $i++) {
+            $_userDetails = $this->generateUserDetails();
+            $userId = $this->getUserIdForGeneratedUser($_userDetails);
+            $userDetails[$userId] = $_userDetails;
+        }
+
+        $this->intercomeoService->createUsers(array_keys($userDetails));
+
+        foreach($userDetails as $_userDetails){
+            $userId = $this->getUserIdForGeneratedUser($_userDetails);
+
+            $userReturnedFromIntercom = $this->intercomeoService->getUser($userId);
+
         $this->markTestIncomplete();
     }
 
