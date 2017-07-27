@@ -25,14 +25,8 @@ class TestCase extends BaseTestCase
     /** * @var IntercomClient */
     protected $intercomClient;
 
-    /** * @var TagService */
-    protected $tagService;
-
     /** @var IntercomUsersRepository */
     protected $usersRepository;
-
-    /** @var UserService */
-    protected $userService;
 
     protected $userIds;
     protected $email;
@@ -47,8 +41,6 @@ class TestCase extends BaseTestCase
 
         $this->faker = $this->app->make(Generator::class);
 
-        $this->userService = $this->app->make(UserService::class);
-        $this->tagService = $this->app->make(TagService::class);
         $this->usersRepository = $this->app->make(IntercomUsersRepository::class);
 
         Carbon::setTestNow(Carbon::now());

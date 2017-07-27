@@ -8,6 +8,16 @@ use Railroad\Intercomeo\Services\UserService;
 
 class UserServiceTest extends TestCase
 {
+    /** @var UserService $userService */
+    private $userService;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->userService = $this->app->make(UserService::class);
+    }
+
     public function test_create_users_single_users()
     {
         $userDetails = $this->generateUserDetails();

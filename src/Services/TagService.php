@@ -10,10 +10,15 @@ class TagService
      * @var IntercomClient
      */
     private $intercomClient;
+    private $userService;
 
     public function __construct(IntercomClient $intercomClient)
+        IntercomClient $intercomClient,
+        UserService $userService
+    )
     {
         $this->intercomClient = $intercomClient;
+        $this->userService = $userService;
     }
 
     /**

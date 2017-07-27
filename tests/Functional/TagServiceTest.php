@@ -2,8 +2,20 @@
 
 namespace Railroad\Intercomeo\Tests;
 
+use Railroad\Intercomeo\Services\TagService;
+
 class TagServiceTest extends TestCase
 {
+    /** @var TagService $tagService */
+    private $tagService;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->tagService = $this->app->make(TagService::class);
+    }
+
     public function test_get_tags_for_user(){
         $tagsStored = $this->tagService->getTagsForUser($this->userId);
 
