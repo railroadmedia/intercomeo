@@ -32,8 +32,10 @@ class IntercomUsersRepository
 
     public function getLastRequestAt($userOrUserId)
     {
-        if(get_class($userOrUserId) == stdClass::class){
-            return (integer) $userOrUserId->last_request_at;
+        if(is_object($userOrUserId)){
+            if(get_class($userOrUserId) == stdClass::class){
+                return (integer) $userOrUserId->last_request_at;
+            }
         }
 
         return (integer) $this->get($userOrUserId)->last_request_at;
