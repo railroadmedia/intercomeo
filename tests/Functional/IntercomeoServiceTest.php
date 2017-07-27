@@ -7,7 +7,9 @@ use Railroad\Intercomeo\Events\ApplicationReceivedRequest;
 
 class IntercomeoServiceTest extends TestCase
 {
-
+    /**
+     * interacts with Intercom API
+     */
     public function test_create_users_single_users()
     {
         $userDetails = $this->generateUserDetails();
@@ -20,6 +22,9 @@ class IntercomeoServiceTest extends TestCase
         $this->assertIsUser($userReturnedFromIntercom, $userId);
     }
 
+    /**
+     * interacts with Intercom API
+     */
     public function test_create_users_multiple_users()
     {
         $numberToCreate = rand(3, 6);
@@ -41,16 +46,25 @@ class IntercomeoServiceTest extends TestCase
         }
     }
 
+    /**
+     * interacts with database
+     * does *not* interact with Intercom API
+     */
     public function test_store_last_updated_in_database()
     {
-        $this->markTestIncomplete('broken because of changes to TestCase in commit eb26f16a');
+        $userDetails = $this->generateUserDetails();
+        $userId = $this->getUserIdForGeneratedUser($userDetails);
+
+        $knownDate = time();
+        $this->intercomeoService->storeLatestActivity($userId, $knownDate);
+
+        $this->assertEquals($knownDate, $this->usersRepository->getLastRequestAt($userId));
     }
-//    {
-//        $knownDate = time();
-//        $this->intercomeoService->storeLatestActivity($this->userId, $knownDate);
-//
-//        $this->assertEquals($knownDate, $this->usersRepository->getLastRequestAt($this->userId));
-//    }
+
+    public function test_when_user_already_exists_intercom_user_create_updates_only_supplied_fields()
+    {
+        $this->markTestIncomplete();
+    }
 
     public function test_first_store_user_attribute_last_request_at()
     {
