@@ -12,6 +12,7 @@ use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use Railroad\Intercomeo\Services\UserService;
 use Railroad\Intercomeo\Services\TagService;
+use stdClass;
 
 class TestCase extends BaseTestCase
 {
@@ -225,6 +226,30 @@ class TestCase extends BaseTestCase
         $this->userIds[] = $userId;
 
         event(new MemberAdded($userId, $email, $tags));
+    }
+
+    protected function assertIsUser(stdClass $user){
+        $this->assertTrue(
+            (
+                ($user->type === 'user')
+                &&
+                !empty($user->id)
+                &&
+                ($user->app_id === config('intercomeo.app_id'))
+            )
+        );
+    }
+
+    protected function assertIsTag(stdClass $tag){
+        $this->assertTrue(
+            (
+                ($tag->type === 'tag')
+                &&
+                !empty($tag->id)
+                &&
+                ($tag->app_id === config('intercomeo.app_id'))
+            )
+        );
     }
 
 }
