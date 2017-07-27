@@ -18,7 +18,7 @@ class IntercomUsersRepositoryTest extends TestCase
         $createdWithInLastFiveMinutes = Carbon::createFromTimestampUTC($userRow->last_request_at)
             ->gt($fiveMinutesAgo);
         $createdNotAMillionYearsInTheFuture = Carbon::createFromTimestampUTC($userRow->last_request_at)
-            ->gt(Carbon::now());
+            ->gte(Carbon::now());
         $this->assertTrue($createdWithInLastFiveMinutes && $createdNotAMillionYearsInTheFuture);
     }
 
