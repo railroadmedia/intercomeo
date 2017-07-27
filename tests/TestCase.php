@@ -90,6 +90,8 @@ class TestCase extends BaseTestCase
                 'prefix' => '',
             ]
         );
+        $app['config']->set('intercomeo.app_id', env('INTERCOM_APP_ID'));
+        $app['config']->set('intercomeo.hmac_secret', env('INTERCOM_HMAC_SECRET'));
         $app['config']->set('intercomeo.access_token', env('INTERCOM_ACCESS_TOKEN'));
 
         $app['config']->set(
