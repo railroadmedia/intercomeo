@@ -17,6 +17,7 @@ class UserService
 
     private $intercomClient;
     private $intercomUsersRepository;
+    private $tagService;
 
     /*
      * FYI IntercomClient is created as singleton in service
@@ -24,11 +25,66 @@ class UserService
      */
     public function __construct(
         IntercomClient $intercomClient,
-        IntercomUsersRepository $intercomUsersRepository
+        IntercomUsersRepository $intercomUsersRepository,
+        TagService $tagService
     )
     {
         $this->intercomClient = $intercomClient;
         $this->intercomUsersRepository = $intercomUsersRepository;
+        $this->tagService = $tagService;
+    }
+
+    /*
+     * One request per user create. Sad!
+     */
+    public function createUsers($userIds, $tags = null)
+    {
+        // todo: testing needed - not done because local env broken : (
+        // todo: testing needed - not done because local env broken : (
+        // todo: testing needed - not done because local env broken : (
+
+        $intercomUsers = null;
+        $creationFailed = false;
+        $successfullyCreated = [];
+
+        if(!is_array($userIds)){
+            $userIds = [$userIds];
+        }
+
+        foreach($userIds as $userId){
+
+            if(!$this->doesUserExistInIntercomAlready($userId)){
+
+                $intercomUser = $this->intercomClient->users->create([
+                    'user_id' => $userId
+                ]);
+
+                $successfulCreation =
+                    ($intercomUser->type === 'user') &&
+                    !empty($intercomUser->id) &&
+                    ($intercomUser->app_id === config('intercomeo.app_id'));
+
+                if(!$successfulCreation){
+                    $creationFailed = true;
+                }else{
+                    $successfullyCreated[] = $userId;
+                }
+
+            }
+
+        }
+
+        if(!is_null($tags)){
+            $successfulCreation = $this->tagService->tagUsers($successfullyCreated, $tags);
+
+            if(!$successfulCreation){
+                $creationFailed = true;
+            }
+        }
+
+        $success = !$creationFailed;
+
+        return $success;
     }
 
     /**
@@ -39,6 +95,31 @@ class UserService
     public function getUser($userId)
     {
         return $this->intercomClient->users->getUsers(['user_id' => $userId]);
+    }
+
+    public function doesUserExistInIntercomAlready($userId)
+    {
+        // todo: testing needed - not done because local env broken : (
+        // todo: testing needed - not done because local env broken : (
+        // todo: testing needed - not done because local env broken : (
+
+        $userRow = $this->intercomUsersRepository->get($userId);
+
+        if(empty($userRow)){
+
+            $user = $this->getUser($userId);
+
+            $exists = (
+                ($user->type === 'user') &&
+                ($user->user_id === $userId) &&
+                !empty($user->id) &&
+                ($user->app_id === config('intercomeo.app_id'))
+            );
+
+            return $exists;
+        }
+
+        return true;
     }
 
     /**

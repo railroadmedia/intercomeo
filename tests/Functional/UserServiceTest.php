@@ -8,6 +8,21 @@ use Railroad\Intercomeo\Services\UserService;
 
 class UserServiceTest extends TestCase
 {
+    public function test_create_users_single_users()
+    {
+        $userDetails = $this->generateUserDetails();
+        $userId = $this->getUserIdForGeneratedUser($userDetails);
+
+        $this->userService->createUsers($userId);
+
+        $this->markTestIncomplete();
+    }
+
+    public function test_create_users_multiple_users()
+    {
+        $this->markTestIncomplete();
+    }
+
     public function test_store_last_updated_in_database()
     {
         $this->markTestIncomplete('broken because of changes to TestCase in commit eb26f16a');
