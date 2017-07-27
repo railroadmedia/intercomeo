@@ -37,7 +37,8 @@ class IntercomeoServiceTest extends TestCase
 
             $userReturnedFromIntercom = $this->intercomeoService->getUser($userId);
 
-        $this->markTestIncomplete();
+            $this->assertIsUser($userReturnedFromIntercom, $userId);
+        }
     }
 
     public function test_store_last_updated_in_database()
