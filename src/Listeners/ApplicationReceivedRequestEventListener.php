@@ -9,48 +9,39 @@ use Railroad\Intercomeo\Services\IntercomeoService;
 
 class ApplicationReceivedRequestEventListener
 {
-    /**
-     * @var IntercomUsersRepository
-     */
     private $intercomUsersRepository;
-
-    /**
-     * @var IntercomeoService
-     */
-    private $userService;
+    private $intercomeoService;
 
     public function __construct(
         IntercomUsersRepository $intercomUsersRepository,
-        IntercomeoService $userService
+        IntercomeoService $intercomeoService
     )
     {
         $this->intercomUsersRepository = $intercomUsersRepository;
-        $this->userService = $userService;
+        $this->intercomeoService = $intercomeoService;
     }
 
     public function handle(ApplicationReceivedRequest $applicationReceivedRequest)
     {
-        /*
-         * rename from "buffer"?
-         * rename from "buffer"?
-         * rename from "buffer"?
-         *
-         * maybe "selected acceptable inaccuracy?"
-         */
-
         $userId = $applicationReceivedRequest->userId;
+        $email = $applicationReceivedRequest->email;
         $utcTimestamp = $applicationReceivedRequest->utcTimestamp;
-
-        $lastRequestAt = Carbon::createFromTimestampUTC($this->intercomUsersRepository->getLastRequestAt($userId));
 
         if(is_null($utcTimestamp)){
             $utcTimestamp = time();
         }
 
-        $time = $this->userService->calculateLatestActivityTimeToStoreCarbon($utcTimestamp);
+        if(!$this->intercomeoService->doesUserExistInIntercomAlready($userId)){
+            $user = $this->intercomeoService->storeUser($userId, $email);
+        }else{
+            $user = $this->intercomeoService->getUser($userId);
+        };
 
-        if($lastRequestAt->lt($time)){
-            $this->userService->storeLatestActivity($userId, $time->timestamp);
+        $newTime = $this->intercomeoService->calculateLatestActivityTimeToStore($utcTimestamp);
+        $stored = $this->intercomUsersRepository->getLastRequestAt($userId);
+
+        if($newTime > $stored){
+            $this->intercomeoService->storeLatestActivity($user, $newTime);
         }
     }
 }

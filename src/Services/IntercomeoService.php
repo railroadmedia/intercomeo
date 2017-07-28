@@ -33,6 +33,11 @@ class IntercomeoService
         $this->intercomUsersRepository = $intercomUsersRepository;
     }
 
+    /**
+     * @param $userId
+     * @param $email
+     * @return bool|stdClass
+     */
     public function storeUser($userId, $email)
     {
         $user = $this->intercomClient->users->create([ "user_id" => $userId, "email" => $email ]);
@@ -70,7 +75,7 @@ class IntercomeoService
      * @param $userId
      * @return bool
      *
-     * First checks our DB, then checks Intercom's record just to be sure.
+     * First checks our DB because that's quicker. If nothing in DB, then checks Intercom's record just to be sure.
      */
     public function doesUserExistInIntercomAlready($userId)
     {
@@ -142,14 +147,6 @@ class IntercomeoService
      */
     public function calculateLatestActivityTimeToStore($utcTimestamp)
     {
-        /*
-         * rename from "buffer"?
-         * rename from "buffer"?
-         * rename from "buffer"?
-         *
-         * maybe "selected acceptable inaccuracy?"
-         */
-
         $buffer = config('intercomeo.last_request_buffer_amount');
 
         $time = Carbon::createFromTimestampUTC($utcTimestamp);
@@ -180,15 +177,7 @@ class IntercomeoService
             }
         }
 
-        return $time->getTimestamp();
-    }
-
-    /**
-     * @param integer $utcTimestamp
-     * @return Carbon
-     */
-    public function calculateLatestActivityTimeToStoreCarbon($utcTimestamp){
-        return Carbon::createFromTimestampUTC(self::calculateLatestActivityTimeToStore($utcTimestamp));
+        return $time->timestamp;
     }
 
     /**

@@ -4,6 +4,7 @@ namespace Railroad\Intercomeo\Tests;
 
 use Carbon\Carbon;
 use Railroad\Intercomeo\Events\ApplicationReceivedRequest;
+use Railroad\Intercomeo\Services\IntercomeoService;
 
 class IntercomeoServiceTest extends TestCase
 {
@@ -152,32 +153,49 @@ class IntercomeoServiceTest extends TestCase
         $success = $foo && $bar;
 
         $this->assertTrue($success);
-//    }
-
-    public function test_store_update_last_request_at_when_required()
-    {
-        $this->markTestIncomplete('broken because of changes to TestCase in commit eb26f16a');
     }
-//    {
-//        $knownTime = Carbon::createFromTimestampUTC(time());
-//
-//        $this->intercomeoService->storeLatestActivity($this->userId, $this->intercomeoService->calculateLatestActivityTimeToStore(
-//            $knownTime->copy()->subDay()->getTimestamp()
-//        ));
-//
-//        if(config('intercomeo.last_request_buffer_unit') !== IntercomeoService::$timeUnits['hour']){
-//            $this->fail('Expected default config value has been overridden somewhere');
-//        }
-//
-//        $valueBeforeUpdate = $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($this->userId));
-//
-//        event(new ApplicationReceivedRequest($this->userId, $knownTime->getTimestamp()));
-//
-//        $this->assertEquals(
-//            Carbon::createFromTimestampUTC($valueBeforeUpdate)->addDay()->getTimestamp(),
-//            $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($this->userId))
-//        );
-//    }
+
+    public function test_ensure_config_values_conform_to_expecations()
+    {
+        if(config('intercomeo.last_request_buffer_unit') !== IntercomeoService::$timeUnits['hour']){
+            $this->fail(
+                'Expected default config value ("intercomeo.last_request_buffer_unit") ' .
+                'does not match allowed options (in "IntercomeoService::$timeUnits").'
+            );
+        }
+
+        $this->assertTrue(true);
+    }
+
+    /*
+     * update is required, time should be different
+     * update is not required, times are the same
+     */
+    public function test_update_last_request_at_when_required()
+    {
+        // set up
+
+        $user = $this->createUser();
+        $userId = $user->user_id;
+
+        $knownTime = Carbon::now();
+
+        $this->intercomeoService->storeLatestActivity(
+            $user,
+            $this->intercomeoService->calculateLatestActivityTimeToStore($knownTime->copy()->subDay()->timestamp)
+        );
+
+        // end of set up, test case proper start
+
+        $valueBeforeUpdate = $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($userId));
+
+        event(new ApplicationReceivedRequest($userId, $knownTime->timestamp));
+
+        $this->assertEquals(
+            Carbon::createFromTimestampUTC($valueBeforeUpdate)->addDay()->getTimestamp(),
+            $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($userId))
+        );
+    }
 
     public function test_do_no_store_update_last_request_at_when_not_required()
     {
