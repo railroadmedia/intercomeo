@@ -80,33 +80,31 @@ class IntercomeoServiceTest extends TestCase
         $this->assertEquals($user->email, $userReturned->email);
     }
 
-    public function test_first_store_user_attribute_last_request_at()
+    public function test_store_user_attribute_last_request_at_for_first_time()
     {
-        $this->markTestIncomplete('broken because of changes to TestCase in commit eb26f16a');
-    }
-//    {
-//        $this->intercomeoService->storeLatestActivity($this->userId);
-//
-//        $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $this->userId]);
-//        $timeReturned = Carbon::createFromTimestampUTC($userReturnedFromIntercom->last_request_at);
-//        $anHourAgo = Carbon::now()->subHour();
-//
-//        $this->assertTrue($timeReturned->gt($anHourAgo));
-//    }
+        $user = $this->createUser();
 
-    public function test_first_store_user_attribute_last_request_at_passing_in_timestamp()
-    {
-        $this->markTestIncomplete('broken because of changes to TestCase in commit eb26f16a');
+        $this->intercomeoService->storeLatestActivity($user);
+
+        $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $user->user_id]);
+        $timeReturned = Carbon::createFromTimestampUTC($userReturnedFromIntercom->last_request_at);
+        $fiveMinutesAgo = Carbon::now()->subMinutes(5);
+        $fiveSecondsFromNow = Carbon::now()->addSeconds(5);
+
+        $this->assertTrue($timeReturned->gt($fiveMinutesAgo) && $timeReturned->lt($fiveSecondsFromNow));
     }
-//    {
-//        $knownDate = time();
-//
-//        $this->intercomeoService->storeLatestActivity($this->userId, $knownDate);
-//
-//        $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $this->userId]);
-//
-//        $this->assertEquals($knownDate, $userReturnedFromIntercom->last_request_at);
-//    }
+
+    public function test_store_user_attribute_last_request_at_for_first_time_and_passing_in_timestamp()
+    {
+        $user = $this->createUser();
+        $knownDate = rand(1000000000, 2000000000);
+
+        $this->intercomeoService->storeLatestActivity($user, $knownDate);
+
+        $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $user->user_id]);
+
+        $this->assertEquals($knownDate, $userReturnedFromIntercom->last_request_at);
+    }
 
     public function test_update_last_request_at_attribute_for_user_do_not_specify_time()
     {
