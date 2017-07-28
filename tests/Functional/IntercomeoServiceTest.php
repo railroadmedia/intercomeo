@@ -14,12 +14,16 @@ class IntercomeoServiceTest extends TestCase
     {
         $userDetails = $this->generateUserDetails();
         $userId = $this->getUserIdForGeneratedUser($userDetails);
+        $email = $this->getEmailForGeneratedUser($userDetails);
 
-        $this->intercomeoService->createUsers($userId);
+        $this->intercomeoService->storeUser($userId, $email);
+        $this->userIds[] = $userId;
 
         $userReturnedFromIntercom = $this->intercomeoService->getUser($userId);
 
-        $this->assertIsUser($userReturnedFromIntercom, $userId);
+        $userIsValid = $this->intercomeoService->validUserCreated($userReturnedFromIntercom, $userId);
+
+        $this->assertTrue($userIsValid);
     }
 
     /**
@@ -35,14 +39,20 @@ class IntercomeoServiceTest extends TestCase
             $userDetails[$userId] = $_userDetails;
         }
 
-        $this->intercomeoService->createUsers(array_keys($userDetails));
+        foreach($userDetails as $_userDetails){
+            $userId = $this->getUserIdForGeneratedUser($_userDetails);
+            $email = $this->getEmailForGeneratedUser($_userDetails);
+
+            $this->intercomeoService->storeUser($userId, $email);
+            $this->userIds[] = $userId;
+        }
 
         foreach($userDetails as $_userDetails){
             $userId = $this->getUserIdForGeneratedUser($_userDetails);
 
             $userReturnedFromIntercom = $this->intercomeoService->getUser($userId);
 
-            $this->assertIsUser($userReturnedFromIntercom, $userId);
+            $this->assertTrue($this->intercomeoService->validUserCreated($userReturnedFromIntercom, $userId));
         }
     }
 
@@ -61,9 +71,24 @@ class IntercomeoServiceTest extends TestCase
         $this->assertEquals($knownDate, $this->usersRepository->getLastRequestAt($userId));
     }
 
+    /**
+     * interacts with database
+     * does *not* interact with Intercom API
+     */
     public function test_when_user_already_exists_intercom_user_create_updates_only_supplied_fields()
     {
-        $this->markTestIncomplete();
+        $userDetails = $this->generateUserDetails();
+        $userId = $this->getUserIdForGeneratedUser($userDetails);
+        $email = $this->getEmailForGeneratedUser($userDetails);
+        $this->createUser($userId, $email);
+
+        $knownDate = time();
+
+        $this->intercomeoService->storeLatestActivity($userId, $knownDate);
+
+        $userReturned = $this->intercomeoService->getUser($userId);
+
+        $this->assertEquals($email, $userReturned->email);
     }
 
     public function test_first_store_user_attribute_last_request_at()
@@ -218,7 +243,12 @@ class IntercomeoServiceTest extends TestCase
 
     public function test_add_single_tag_to_single_user_passed_in_array()
     {
+
+        $this->markTestIncomplete();
+
         $userDetails = $this->generateUserDetails();
+
+        // todo: intercomeoService->storeUser
 
         $userId = $this->getUserIdForGeneratedUser($userDetails);
         $tags = $this->getTagsForGeneratedUser($userDetails);
@@ -227,7 +257,7 @@ class IntercomeoServiceTest extends TestCase
 
         $user = $this->intercomeoService->getUser($userId);
 
-        $this->assertIsUser($user);
+        $this->assertTrue($this->intercomeoService->validUserCreated($user, $userId));
 
         $this->assertEquals($tags, $user->tags);
     }

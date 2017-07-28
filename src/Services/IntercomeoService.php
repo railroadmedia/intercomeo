@@ -4,6 +4,7 @@ namespace Railroad\Intercomeo\Services;
 
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Intercom\IntercomClient;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use stdClass;
@@ -32,53 +33,18 @@ class IntercomeoService
         $this->intercomUsersRepository = $intercomUsersRepository;
     }
 
-    /*
-     * One request per user create. Sad!
-     */
-    public function createUsers($userIds, $tags = null)
+    public function storeUser($userId, $email)
     {
-        $intercomUsers = null;
-        $creationFailed = false;
-        $successfullyCreated = [];
+        $user = $this->intercomClient->users->create([ "user_id" => $userId, "email" => $email ]);
 
-        if(!is_array($userIds)){
-            $userIds = [$userIds];
+        $success = $this->validUserCreated($user, $userId, $email ) && $this->intercomUsersRepository->store($userId);
+
+        if(!$success){
+            Log::error('\Railroad\Intercomeo\Services\IntercomeoService::storeUser failed to for user ' . $userId);
+            return false;
         }
 
-        foreach($userIds as $userId){
-
-            if(!$this->doesUserExistInIntercomAlready($userId)){
-
-                $intercomUser = $this->intercomClient->users->create([
-                    'user_id' => $userId
-                ]);
-
-                $successfulCreation =
-                    ($intercomUser->type === 'user') &&
-                    !empty($intercomUser->id) &&
-                    ($intercomUser->app_id === config('intercomeo.app_id'));
-
-                if(!$successfulCreation){
-                    $creationFailed = true;
-                }else{
-                    $successfullyCreated[] = $userId;
-                }
-
-            }
-
-        }
-
-        if(!is_null($tags)){
-            $successfulCreation = $this->tagUsers($successfullyCreated, $tags);
-
-            if(!$successfulCreation){
-                $creationFailed = true;
-            }
-        }
-
-        $success = !$creationFailed;
-
-        return $success;
+        return $user;
     }
 
     /**
@@ -235,46 +201,44 @@ class IntercomeoService
     }
 
     /**
-     * @param int|string|array $userIds
+     * @param stdClass[] $users
      * @param array|string $tags
      * @param bool $untag
-     * @return boolean
-     *
+     * @return bool
      * Makes one request *per* tag. Sad!
      */
-    public function tagUsers($userIds, $tags, $untag = false)
+    public function tagUsers($users, $tags, $untag = false)
     {
+        $simplifiedUsers = [];
         $creationFailed = false;
 
-        if(!is_array($userIds)){
-            $userIds = [$userIds];
+        if(!is_array($users)){
+            $users = [$users];
         }
 
         if(!is_array($tags)){
             $tags = [$tags];
         }
 
-        $users = [];
-
-        foreach($userIds as $userId){
-            $creationFailed = false;
-
-            if(!$this->userService->doesUserExistInIntercomAlready($userId)){
-                $creationFailed = !$this->userService->createUsers($userId);
-            }
-
-            if(!$creationFailed){
-                $users[] = [
-                    'user_id' => $userId,
-                    'untag' => $untag
-                ];
+        foreach($users as $user){
+            if(!is_object($user)){
+                return false;
+            }else{
+                if(!get_class($user) === stdClass::class){
+                    return false;
+                    Log::error('User was passed to \Railroad\Intercomeo\Services\IntercomeoService::tagUsers but' .
+                    ' was not stdClass object as requires');
+                }else{
+                    $simplifiedUsers[] = ['user_id' => $user->user_id, 'untag' => $untag];
+                }
             }
         }
 
         foreach($tags as $tag){
             $tag = $this->intercomClient->tags->tag([
                 'name' => $tag,
-                'users' => $users
+                'users' => $users,
+                'untag' => $untag
             ]);
 
             $successfulCreation =
@@ -291,22 +255,28 @@ class IntercomeoService
     }
 
     /**
-     * @param array|integer|string $userIds
+     * @param stdClass[] $users
      * @param array|string $tags
-     *
+     * @return bool
      * Makes one request *per* tag. Sad!
      */
-    public function untagUsers($userIds, $tags)
+    public function untagUsers($users, $tags)
     {
-        if(!is_array($userIds)){
-            $userIds = [$userIds];
-        }
-        if(!is_array($tags)){
-            $tags = [$tags];
+        return $this->tagUsers($users, $tags, true);
+    }
+
+    public function validUserCreated($apiCallResult, $userId, $email = null)
+    {
+        if(is_object($apiCallResult)){
+            if(get_class($apiCallResult) == stdClass::class){
+                return ($apiCallResult->type === 'user') &&
+                    !empty($apiCallResult->id) &&
+                    (!is_null($userId) ? $apiCallResult->user_id == $userId : true) &&
+                    (!is_null($email) ? $apiCallResult->email == $email : true) &&
+                    ($apiCallResult->app_id === config('intercomeo.app_id'));
+            }
         }
 
-        foreach($tags as $tag){
-            $this->tagUsers($userIds, $tag, true);
-        }
+        return false;
     }
 }
