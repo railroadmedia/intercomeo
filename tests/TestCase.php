@@ -202,7 +202,7 @@ class TestCase extends BaseTestCase
     }
 
     /**
-     * @param $userId
+     * @param string|int $userId
      * @param $email
      * @param $tags
      * @return stdClass|false
@@ -211,7 +211,20 @@ class TestCase extends BaseTestCase
      *
      * very very similar to method storeUser below
      */
-    protected function createUser($userId, $email, $tags = []){
+    protected function createUser($userId = '', $email = '', $tags = []){
+
+        $userDetails = $this->generateUserDetails();
+
+        if(empty($userId)){
+            $userId = $this->getUserIdForGeneratedUser($userDetails);
+        }
+        if(empty($email)){
+            $email = $this->getEmailForGeneratedUser($userDetails);
+        }
+        if(empty($tags)){
+            $tags = $this->getTagsForGeneratedUser($userDetails);
+        }
+
         event(new MemberAdded($userId, $email, $tags));
         $user = $this->intercomeoService->getUser($userId);
         if(!is_object($user)){
