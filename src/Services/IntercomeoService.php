@@ -116,12 +116,14 @@ class IntercomeoService
     }
 
     /**
-     * @param integer|string $userId
+     * @param stdClass $user
      * @param int $utcTimestamp
      * @return bool
+     * @internal param int|string $userId
      */
-    public function storeLatestActivity($userId, $utcTimestamp = null)
+    public function storeLatestActivity(stdClass $user, $utcTimestamp = null)
     {
+        $userId = $user->user_id;
         $utcTimestamp = $utcTimestamp ?? time();
 
         $this->intercomClient->users->create([
@@ -236,26 +238,25 @@ class IntercomeoService
                 return false;
             }else{
                 if(!get_class($user) === stdClass::class){
-                    return false;
                     Log::error('User was passed to \Railroad\Intercomeo\Services\IntercomeoService::tagUsers but' .
                     ' was not stdClass object as requires');
+                    return false;
                 }else{
                     $simplifiedUsers[] = ['user_id' => $user->user_id, 'untag' => $untag];
                 }
             }
         }
 
-        foreach($tags as $tag){
+        foreach($tags as $tagName){
             $tag = $this->intercomClient->tags->tag([
-                'name' => $tag,
-                'users' => $users,
-                'untag' => $untag
+                'name' => $tagName,
+                'users' => $simplifiedUsers
             ]);
 
             $successfulCreation =
                 ($tag->type === 'tag') &&
-                !empty($tag->id) &&
-                ($tag->app_id === config('intercomeo.app_id'));
+                ($tag->name === $tagName) &&
+                !empty($tag->id);
 
             if(!$successfulCreation){
                 $creationFailed = true;

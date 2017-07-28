@@ -57,13 +57,12 @@ class IntercomeoServiceTest extends TestCase
      */
     public function test_store_last_updated_in_database()
     {
-        $userDetails = $this->generateUserDetails();
-        $userId = $this->getUserIdForGeneratedUser($userDetails);
+        $user = $this->createUser();
 
         $knownDate = time();
-        $this->intercomeoService->storeLatestActivity($userId, $knownDate);
+        $this->intercomeoService->storeLatestActivity($user, $knownDate);
 
-        $this->assertEquals($knownDate, $this->usersRepository->getLastRequestAt($userId));
+        $this->assertEquals($knownDate, $this->usersRepository->getLastRequestAt($user->user_id));
     }
 
     /**
@@ -72,18 +71,13 @@ class IntercomeoServiceTest extends TestCase
      */
     public function test_when_user_already_exists_intercom_user_create_updates_only_supplied_fields()
     {
-        $userDetails = $this->generateUserDetails();
-        $userId = $this->getUserIdForGeneratedUser($userDetails);
-        $email = $this->getEmailForGeneratedUser($userDetails);
-        $this->createUser($userId, $email);
+        $user = $this->createUser();
 
-        $knownDate = time();
+        $this->intercomeoService->storeLatestActivity($user, time());
 
-        $this->intercomeoService->storeLatestActivity($userId, $knownDate);
+        $userReturned = $this->intercomeoService->getUser($user->user_id);
 
-        $userReturned = $this->intercomeoService->getUser($userId);
-
-        $this->assertEquals($email, $userReturned->email);
+        $this->assertEquals($user->email, $userReturned->email);
     }
 
     public function test_first_store_user_attribute_last_request_at()
