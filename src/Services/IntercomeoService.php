@@ -126,14 +126,14 @@ class IntercomeoService
         $userId = $user->user_id;
         $utcTimestamp = $utcTimestamp ?? time();
 
-        $this->intercomClient->users->create([
+        $user = $this->intercomClient->users->create([
             'user_id' => $userId,
             'last_request_at' => $utcTimestamp
         ]);
 
-        $this->intercomUsersRepository->store($userId, $utcTimestamp);
+        $stored = $this->intercomUsersRepository->store($userId, $utcTimestamp);
 
-        return true;
+        return $user && $stored;
     }
 
     /**
