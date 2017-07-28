@@ -108,20 +108,50 @@ class IntercomeoServiceTest extends TestCase
 
     public function test_update_last_request_at_attribute_for_user_do_not_specify_time()
     {
-        $this->markTestIncomplete('broken because of changes to TestCase in commit eb26f16a');
+        Carbon::setTestNow(Carbon::createFromTimestampUTC(time()));
+        $user = $this->createUser();
+        $firstTime = Carbon::now()->subWeek();
+        $fiveMinutesAgo = Carbon::now()->subMinutes(5);
+        $fiveSecondsFromNow = Carbon::now()->addSeconds(5);
+
+        $this->intercomeoService->storeLatestActivity($user, $firstTime->getTimestamp());
+
+        $this->intercomeoService->storeLatestActivity($user);
+
+        $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $user->user_id]);
+        $timeReturned = Carbon::createFromTimestampUTC($userReturnedFromIntercom->last_request_at);
+
+        $foo = $timeReturned->gt($fiveMinutesAgo);
+        $bar = $timeReturned->lt($fiveSecondsFromNow);
+
+        $success = $foo && $bar;
+
+        $this->assertTrue($success);
     }
-//    {
-//        $knownDate = time()-10000;
-//
-//        $this->intercomeoService->storeLatestActivity($this->userId, $knownDate);
-//
-//        $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $this->userId]);
-//        $this->assertEquals($knownDate, $userReturnedFromIntercom->last_request_at);
-//
-//        $this->intercomeoService->storeLatestActivity($this->userId);
-//
-//        $this->assertTrue((time() - 10 ) < $this->usersRepository->getLastRequestAt($this->userId));
-//        $this->assertTrue((time() + 10 ) > $this->usersRepository->getLastRequestAt($this->userId));
+
+    public function test_update_last_request_at_attribute_for_user_specifying_time()
+    {
+        Carbon::setTestNow(Carbon::createFromTimestampUTC(rand(1000000000, 2000000000)));
+        $user = $this->createUser();
+        $firstTime = Carbon::now()->subWeek();
+        $fiveMinutesAgo = Carbon::now()->subMinutes(5);
+        $fiveSecondsFromNow = Carbon::now()->addSeconds(5);
+
+        $foo = $firstTime->getTimestamp();
+
+        $this->intercomeoService->storeLatestActivity($user, $firstTime->getTimestamp());
+
+        $this->intercomeoService->storeLatestActivity($user, Carbon::now()->getTimestamp());
+
+        $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $user->user_id]);
+        $timeReturned = Carbon::createFromTimestampUTC($userReturnedFromIntercom->last_request_at);
+
+        $foo = $timeReturned->gt($fiveMinutesAgo);
+        $bar = $timeReturned->lt($fiveSecondsFromNow);
+
+        $success = $foo && $bar;
+
+        $this->assertTrue($success);
 //    }
 
     public function test_store_update_last_request_at_when_required()
