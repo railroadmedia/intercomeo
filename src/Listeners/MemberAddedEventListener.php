@@ -43,17 +43,14 @@ class MemberAddedEventListener
         $email = $event->email;
         $tags = $event->tags;
 
-        if(!$this->intercomeoService->doesUserExistInIntercomAlready($userId)){
-            $this->intercomClient->users->create([
-                "email" => $email,
-                "user_id" => $userId
-            ]);
+        $user = $this->intercomeoService->storeUser($userId, $email);
 
-            $this->intercomUsersRepository->store($userId);
+        if(!$user){
+            return false;
         }
 
         foreach ($tags as $tag){
-            $this->intercomeoService->tagUsers($userId, $tag);
+            $this->intercomeoService->tagUsers($user, $tag);
         }
 
         return true;
