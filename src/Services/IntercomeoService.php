@@ -49,12 +49,12 @@ class IntercomeoService
 
     /**
      * @param string|integer $userId
-     * @return stdClass|null
+     * @return stdClass|bool
      * @see https://developers.intercom.com/v2.0/reference#user-model
      */
     public function getUser($userId)
     {
-        $user = null;
+        $user = false;
 
         try {
             $user = $this->intercomClient->users->getUsers(['user_id' => $userId]);
@@ -65,6 +65,13 @@ class IntercomeoService
         return $user;
     }
 
+
+    /**
+     * @param $userId
+     * @return bool
+     *
+     * First checks our DB, then checks Intercom's record just to be sure.
+     */
     public function doesUserExistInIntercomAlready($userId)
     {
         $exists = !empty($this->intercomUsersRepository->get($userId));
@@ -73,13 +80,17 @@ class IntercomeoService
 
             $user = $this->getUser($userId);
 
-            if(!empty($user)){
+            if($user){
                 $exists = (
                     ($user->type === 'user') &&
                     ($user->user_id === $userId) &&
                     !empty($user->id) &&
                     ($user->app_id === config('intercomeo.app_id'))
                 );
+
+                if($exists){
+                    Log::error('User ' . $userId . ' exists in intercom but not in our database.');
+                }
             }
         }
 
