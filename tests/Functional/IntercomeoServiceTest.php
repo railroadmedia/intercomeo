@@ -10,20 +10,16 @@ class IntercomeoServiceTest extends TestCase
     /**
      * interacts with Intercom API
      */
-    public function test_create_users_single_users()
+    public function test_create_single_user_using_storeUser_method()
     {
         $userDetails = $this->generateUserDetails();
         $userId = $this->getUserIdForGeneratedUser($userDetails);
         $email = $this->getEmailForGeneratedUser($userDetails);
 
-        $this->intercomeoService->storeUser($userId, $email);
-        $this->userIds[] = $userId;
+        $this->storeUser($userId, $email);
 
         $userReturnedFromIntercom = $this->intercomeoService->getUser($userId);
-
-        $userIsValid = $this->intercomeoService->validUserCreated($userReturnedFromIntercom, $userId);
-
-        $this->assertTrue($userIsValid);
+        $this->assertTrue($this->intercomeoService->validUserCreated($userReturnedFromIntercom, $userId));
     }
 
     /**
@@ -43,8 +39,7 @@ class IntercomeoServiceTest extends TestCase
             $userId = $this->getUserIdForGeneratedUser($_userDetails);
             $email = $this->getEmailForGeneratedUser($_userDetails);
 
-            $this->intercomeoService->storeUser($userId, $email);
-            $this->userIds[] = $userId;
+            $this->storeUser($userId, $email);
         }
 
         foreach($userDetails as $_userDetails){

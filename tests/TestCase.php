@@ -30,7 +30,7 @@ class TestCase extends BaseTestCase
     /** @var IntercomeoService $intercomeoService */
     protected $intercomeoService;
 
-    protected $userIds;
+    protected $idsOfUsersAddedToIntercomToDeleteAfterTests;
     protected $email;
     protected $tags;
 
@@ -108,8 +108,8 @@ class TestCase extends BaseTestCase
         $userDeleted = false;
         $atLeastOneDeleteFailed = false;
 
-        if(!empty($this->userIds)){
-            foreach($this->userIds as $userId){
+        if(!empty($this->idsOfUsersAddedToIntercomToDeleteAfterTests)){
+            foreach($this->idsOfUsersAddedToIntercomToDeleteAfterTests as $userId){
 
                 $this->intercomClient->users->deleteUser('', ['user_id' => $userId]);
 
@@ -205,17 +205,44 @@ class TestCase extends BaseTestCase
      * @param $userId
      * @param $email
      * @param $tags
+     * @return stdClass|false
      *
-     * creates in external service for integration testing
+     * creates in external service for integration testing and adds to list to delete from Intercom at end of test
+     *
+     * very very similar to method storeUser below
      */
     protected function createUser($userId, $email, $tags = []){
-        $this->userIds[] = $userId;
-
         event(new MemberAdded($userId, $email, $tags));
+        $user = $this->intercomeoService->getUser($userId);
+        if(!is_object($user)){
+            $this->assertIsUser($user);
+        }
+        $this->deleteFromIntercomAtEndOfTest($user);
+        return $user;
     }
 
-    protected function deleteFromIntercomAtEndOfTest($userId){
-        $this->userIds[] = $userId;
+    /**
+     * @param $userId
+     * @param $email
+     * @return bool|mixed
+     *
+     * Shortcut to storeUser method used in application, but adds to list to delete from Intercom at end of test
+     *
+     * very very similar to method createUser above
+     */
+    protected function storeUser($userId, $email){
+        $user = $this->intercomeoService->storeUser($userId, $email);
+        $this->deleteFromIntercomAtEndOfTest($user);
+        return $user;
+    }
+
+    /**
+     * @param stdClass $user
+     * @return stdClass
+     */
+    protected function deleteFromIntercomAtEndOfTest(stdClass $user){
+        $this->idsOfUsersAddedToIntercomToDeleteAfterTests[] = $user->user_id;
+        return $user;
     }
 
     /**
