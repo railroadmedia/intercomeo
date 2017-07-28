@@ -2,7 +2,6 @@
 
 namespace Railroad\Intercomeo\Listeners;
 
-use Carbon\Carbon;
 use Railroad\Intercomeo\Events\ApplicationReceivedRequest;
 use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use Railroad\Intercomeo\Services\IntercomeoService;
