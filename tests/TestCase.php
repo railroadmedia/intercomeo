@@ -41,6 +41,9 @@ class TestCase extends BaseTestCase
         $this->artisan('migrate', []);
         $this->artisan('cache:clear', []);
 
+        // created as singleton in service provide because we need to set the api credentials
+        $this->intercomClient = resolve('Intercom\IntercomClient');
+
         $this->faker = $this->app->make(Generator::class);
         $this->usersRepository = $this->app->make(IntercomUsersRepository::class);
         $this->intercomeoService = $this->app->make(IntercomeoService::class);
@@ -107,6 +110,7 @@ class TestCase extends BaseTestCase
 
         if(!empty($this->userIds)){
             foreach($this->userIds as $userId){
+
                 $this->intercomClient->users->deleteUser('', ['user_id' => $userId]);
 
                 try{
@@ -152,16 +156,6 @@ class TestCase extends BaseTestCase
     // ↓ Methods above are called only where they were added by the developer in specific test-cases.
 
     /**
-     * @return IntercomClient
-     */
-    protected function instantiateIntercomClient(){
-        /*
-         * created as singleton in service provide because we need to set the api credentials
-         */
-        return resolve('Intercom\IntercomClient');
-    }
-
-    /**
      * @param null $userId
      * @param null $email
      * @param null $tags
@@ -174,7 +168,6 @@ class TestCase extends BaseTestCase
         $tags = null,
         $numberOfTagsToAdd = null
     ){
-
         if(empty($userId)){
             $userId = $this->faker->randomNumber(6);
         }
@@ -182,7 +175,6 @@ class TestCase extends BaseTestCase
         if(empty($email)){
             $email = $this->faker->email;
         }
-
 
         if(empty($tags)){
             $tags = [];
@@ -216,10 +208,14 @@ class TestCase extends BaseTestCase
      *
      * creates in external service for integration testing
      */
-    protected function createUser($userId, $email, $tags){
+    protected function createUser($userId, $email, $tags = []){
         $this->userIds[] = $userId;
 
         event(new MemberAdded($userId, $email, $tags));
+    }
+
+    protected function deleteFromIntercomAtEndOfTest($userId){
+        $this->userIds[] = $userId;
     }
 
     /**
