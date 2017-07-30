@@ -83,6 +83,8 @@ class IntercomeoServiceTest extends TestCase
 
     public function test_store_user_attribute_last_request_at_for_first_time()
     {
+        Carbon::setTestNow(Carbon::createFromTimestampUTC(time()));
+
         $user = $this->createUser();
 
         $this->intercomeoService->storeLatestActivity($user);
@@ -174,7 +176,7 @@ class IntercomeoServiceTest extends TestCase
     public function test_update_last_request_at_when_required()
     {
         // set up
-
+        Carbon::setTestNow(Carbon::createFromTimestampUTC(time()));
         $user = $this->createUser();
         $userId = $user->user_id;
 
