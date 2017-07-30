@@ -232,35 +232,6 @@ class IntercomeoServiceTest extends TestCase
             $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($userId))
         );
     }
-//    {
-//        $knownTime = Carbon::createFromTimestampUTC(time());
-//
-//        // some random time rounded down to the hour, and then half an hour added.
-//        $knownTimeRoundedDownToHour = $knownTime->copy()->minute(0)->second(0);
-//        $firstTimeSet = $this->intercomeoService->calculateLatestActivityTimeToStore(
-//            $knownTimeRoundedDownToHour->copy()->addMinutes(30)->getTimestamp()
-//        );
-//
-//        $this->intercomeoService->storeLatestActivity($this->userId, $firstTimeSet);
-//
-//        if(config('intercomeo.last_request_buffer_unit') !== IntercomeoService::$timeUnits['hour']){
-//            $this->fail('Expected default config value has been overridden somewhere');
-//        }
-//
-//        $secondTimeSet = $knownTimeRoundedDownToHour->copy()->addMinutes(rand(32, 58))->getTimestamp();
-//
-//        event(new ApplicationReceivedRequest($this->userId, $secondTimeSet));
-//
-//        $this->assertNotEquals(
-//            $secondTimeSet,
-//            $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($this->userId))
-//        );
-//
-//        $this->assertEquals(
-//            $firstTimeSet,
-//            $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($this->userId))
-//        );
-//    }
 
     // moved from TagServiceTest
     // moved from TagServiceTest
