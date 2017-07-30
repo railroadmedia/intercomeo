@@ -182,9 +182,11 @@ class IntercomeoServiceTest extends TestCase
 
         $knownTime = Carbon::now();
 
+        $timeThatWillBeReplaced = $knownTime->copy()->subDay()->timestamp;
+
         $this->intercomeoService->storeLatestActivity(
             $user,
-            $this->intercomeoService->calculateLatestActivityTimeToStore($knownTime->copy()->subDay()->timestamp)
+            $this->intercomeoService->calculateLatestActivityTimeToStore($timeThatWillBeReplaced)
         );
 
         // end of set up, test case proper start
@@ -193,15 +195,42 @@ class IntercomeoServiceTest extends TestCase
 
         event(new ApplicationReceivedRequest($userId, $knownTime->timestamp));
 
+        $valueBeforeUpdateDayAdded = Carbon::createFromTimestampUTC($valueBeforeUpdate)->addDay()->getTimestamp();
+
         $this->assertEquals(
-            Carbon::createFromTimestampUTC($valueBeforeUpdate)->addDay()->getTimestamp(),
+            $valueBeforeUpdateDayAdded,
             $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($userId))
         );
     }
 
     public function test_do_no_store_update_last_request_at_when_not_required()
     {
-        $this->markTestIncomplete('broken because of changes to TestCase in commit eb26f16a');
+        // set up
+        Carbon::setTestNow(Carbon::createFromTimestampUTC(time()));
+        $user = $this->createUser();
+        $userId = $user->user_id;
+
+        $knownTime = Carbon::now();
+
+        $timeThatWillNotBeReplaced = $knownTime->copy()->timestamp;
+
+        $this->intercomeoService->storeLatestActivity(
+            $user,
+            $this->intercomeoService->calculateLatestActivityTimeToStore($timeThatWillNotBeReplaced)
+        );
+
+        // end of set up, test case proper start
+
+        $valueBeforeUpdate = $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($userId));
+
+        event(new ApplicationReceivedRequest($userId, $knownTime->timestamp));
+
+        $valueBeforeUpdateUnmodified = Carbon::createFromTimestampUTC($valueBeforeUpdate)->getTimestamp();
+
+        $this->assertEquals(
+            $valueBeforeUpdateUnmodified,
+            $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($userId))
+        );
     }
 //    {
 //        $knownTime = Carbon::createFromTimestampUTC(time());
