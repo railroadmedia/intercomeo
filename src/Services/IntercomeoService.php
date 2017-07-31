@@ -181,16 +181,15 @@ class IntercomeoService
     }
 
     /**
-     * @param $userId
+     * @param stdClass $user
+     * @param bool $checkForNew
      * @return array
      */
-    public function getTagsForUser($userId)
+    public function getTagsFromUser($user, $checkForNew = true)
     {
-        $user = $this->intercomClient->users->getUsers(['user_id' => $userId]);
-
-        // todo: what if user does not exist? Make sure that does not break this.
-        // todo: what if user does not exist? Make sure that does not break this.
-        // todo: what if user does not exist? Make sure that does not break this.
+        if($checkForNew){
+            $user = $this->getUser($user->user_id);
+        }
 
         $tags = $user->tags->tags;
 

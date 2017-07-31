@@ -233,41 +233,54 @@ class IntercomeoServiceTest extends TestCase
         );
     }
 
-    // moved from TagServiceTest
-    // moved from TagServiceTest
-    // moved from TagServiceTest
-
     public function test_get_tags_for_user(){
-        $this->markTestIncomplete();
 
-        $tagsStored = $this->intercomeoService->getTagsForUser($this->userId);
+        // setup
 
-        sort($this->tags);
+        $generatedTags = [];
+        for ($i = 1; $i <= rand(2,5); $i++) {
+            $generatedTags[] = $this->faker->word;
+        }
+        $user = $this->createUser('', '', $generatedTags);
+
+        // actual testing
+
+        $tagsStored = $this->intercomeoService->getTagsFromUser($user);
+
+        sort($generatedTags);
         sort($tagsStored);
 
-        $this->assertEquals($this->tags, $tagsStored);
+        $this->assertEquals($generatedTags, $tagsStored);
     }
 
     public function test_add_tags_to_user(){
-//        $numberOfTagsToAddInSecondBatch = rand(1, 3);
-//        $tagsSecondBatch = [];
-//
-//        for($i = 0; $i < $numberOfTagsToAddInSecondBatch; $i++){
-//            $tagsSecondBatch[] = $this->faker->word;
-//        }
-//
-//        foreach($tagsSecondBatch as $tagInSecondBatch){
-//            $this->intercomeoService->tagUsers($this->userId, $tagInSecondBatch);
-//        }
-//
-//        $tags = array_merge($this->tags, $tagsSecondBatch);
-//
-//        $tagsStored = $this->intercomeoService->getTagsForUser($this->userId);
-//
-//        sort($tags);
-//        sort($tagsStored);
-//
-//        $this->assertEquals($tags, $tagsStored);
+
+        // setup
+
+        $generatedTags = [];
+        for ($i = 1; $i <= rand(1,3); $i++) {
+            $generatedTags[] = $this->faker->word;
+        }
+
+        $moreGeneratedTags = [];
+        for ($i = 1; $i <= rand(1,3); $i++) {
+            $moreGeneratedTags[] = $this->faker->word;
+        }
+
+        $user = $this->createUser('', '', $generatedTags);
+
+        // actual testing
+
+        $this->intercomeoService->tagUsers([$user], $moreGeneratedTags);
+
+        $combinedTags = array_merge($generatedTags, $moreGeneratedTags);
+
+        $tagsStored = $this->intercomeoService->getTagsFromUser($user);
+
+        sort($combinedTags);
+        sort($tagsStored);
+
+        $this->assertEquals($combinedTags, $tagsStored);
     }
 
     public function test_add_single_tag_to_single_user_passed_as_int()
