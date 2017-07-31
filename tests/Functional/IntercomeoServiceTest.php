@@ -321,14 +321,46 @@ class IntercomeoServiceTest extends TestCase
         $this->assertEquals($combinedTags, $tagsStored);
     }
 
-    public function test_add_multiple_tags_to_single_users()
-    {
-        $this->markTestIncomplete();
-    }
-
     public function test_add_multiple_tags_to_multiple_users()
     {
-        $this->markTestIncomplete();
+        // setup
+
+        $generatedTags = [];
+        $additionalTags = [];
+
+        for ($i = 1; $i <= rand(1,3); $i++) {
+            $generatedTags[] = $this->faker->word;
+        }
+
+        for ($i = 1; $i <= rand(2,3); $i++) {
+            $additionalTags[] = $this->faker->word;
+        }
+
+        $userOne = $this->createUser('', '', $generatedTags);
+        $userTwo = $this->createUser('', '', $generatedTags);
+
+        // actual testing
+
+        $this->intercomeoService->tagUsers([$userOne, $userTwo], $additionalTags);
+
+        $tagsStoredForUserOne = $this->intercomeoService->getTagsFromUser($userOne);
+        $tagsStoredForUserTwo = $this->intercomeoService->getTagsFromUser($userTwo);
+
+        $this->assertEquals($tagsStoredForUserOne, $tagsStoredForUserTwo);
+
+        $combinedTags = array_merge(
+            $generatedTags,
+            $additionalTags
+        );
+
+        sort($combinedTags);
+        $tagsStored = array_unique(
+            array_merge($tagsStoredForUserOne, $tagsStoredForUserTwo),
+            SORT_STRING
+        );
+        sort($tagsStored);
+
+        $this->assertEquals($combinedTags, $tagsStored);
     }
 
     public function test_remove_tags_from_user(){
