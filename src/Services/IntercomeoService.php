@@ -202,7 +202,7 @@ class IntercomeoService
     }
 
     /**
-     * @param stdClass[] $users
+     * @param stdClass|[] $users
      * @param array|string $tags
      * @param bool $untag
      * @return bool
@@ -255,7 +255,7 @@ class IntercomeoService
     }
 
     /**
-     * @param stdClass[] $users
+     * @param stdClass|[] $users
      * @param array|string $tags
      * @return bool
      * Makes one request *per* tag. Sad!

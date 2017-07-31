@@ -169,13 +169,10 @@ class IntercomeoServiceTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /*
-     * update is required, time should be different
-     * update is not required, times are the same
-     */
     public function test_update_last_request_at_when_required()
     {
         // set up
+
         Carbon::setTestNow(Carbon::createFromTimestampUTC(time()));
         $user = $this->createUser();
         $userId = $user->user_id;
@@ -271,7 +268,7 @@ class IntercomeoServiceTest extends TestCase
 
         // actual testing
 
-        $this->intercomeoService->tagUsers([$user], $moreGeneratedTags);
+        $this->intercomeoService->tagUsers($user, $moreGeneratedTags);
 
         $combinedTags = array_merge($generatedTags, $moreGeneratedTags);
 
@@ -365,24 +362,42 @@ class IntercomeoServiceTest extends TestCase
 
     public function test_remove_tags_from_user(){
 
-        $this->markTestIncomplete();
+        // setup
 
-        $randomIndexValue = rand(0, count($this->tags) - 1);
+        $generatedTags = [];
+        for ($i = 1; $i <= rand(1,3); $i++) {
+            $generatedTags[] = $this->faker->word;
+        }
 
-        $tagToRemove = $this->tags[$randomIndexValue];
+        $moreGeneratedTags = [];
+        for ($i = 1; $i <= rand(1,3); $i++) {
+            $moreGeneratedTags[] = $this->faker->word;
+        }
 
-        $this->intercomeoService->tagUsers($this->userId, $tagToRemove, true);
+        $user = $this->createUser('', '', $generatedTags);
 
-        $tagsStoredAfterUntag = $this->intercomeoService->getTagsForUser($this->userId);
+        $this->intercomeoService->tagUsers([$user], $moreGeneratedTags);
 
-        $tagsAfterUntag = $this->tags;
+        $combinedTags = array_merge($generatedTags, $moreGeneratedTags);
 
-        array_splice($tagsAfterUntag, $randomIndexValue, 1);
+        $tagsStored = $this->intercomeoService->getTagsFromUser($user);
 
-        sort($tagsAfterUntag);
-        sort($tagsStoredAfterUntag);
+        sort($combinedTags);
+        sort($tagsStored);
 
-        $this->assertEquals($tagsAfterUntag, $tagsStoredAfterUntag);
+        $this->assertEquals($combinedTags, $tagsStored);
+
+        // actual testing
+
+        $tagToRemove = array_splice($combinedTags, 0, 1);
+
+        $this->intercomeoService->untagUsers($user, $tagToRemove);
+
+        $usersTagsAfterRemoval = $this->intercomeoService->getTagsFromUser($user);
+
+        $this->assertEquals(
+            $combinedTags,
+            $usersTagsAfterRemoval
+        );
     }
-
 }
