@@ -283,40 +283,42 @@ class IntercomeoServiceTest extends TestCase
         $this->assertEquals($combinedTags, $tagsStored);
     }
 
-    public function test_add_single_tag_to_single_user_passed_as_int()
-    {
-        $userDetails = $this->generateUserDetails();
-
-        $userId = $this->getUserIdForGeneratedUser($userDetails);
-        $tags = $this->getTagsForGeneratedUser($userDetails);
-
-        $this->intercomeoService->tagUsers($userId, $tags);
-    }
-
-    public function test_add_single_tag_to_single_user_passed_in_array()
-    {
-
-        $this->markTestIncomplete();
-
-        $userDetails = $this->generateUserDetails();
-
-        // todo: intercomeoService->storeUser
-
-        $userId = $this->getUserIdForGeneratedUser($userDetails);
-        $tags = $this->getTagsForGeneratedUser($userDetails);
-
-        $this->intercomeoService->tagUsers([$userId], $tags);
-
-        $user = $this->intercomeoService->getUser($userId);
-
-        $this->assertTrue($this->intercomeoService->validUserCreated($user, $userId));
-
-        $this->assertEquals($tags, $user->tags);
-    }
-
     public function test_add_single_tag_to_multiple_user()
     {
-        $this->markTestIncomplete();
+        // setup
+
+        $generatedTags = [];
+        for ($i = 1; $i <= rand(1,3); $i++) {
+            $generatedTags[] = $this->faker->word;
+        }
+
+        $additionalTag = $this->faker->word;
+
+        $userOne = $this->createUser('', '', $generatedTags);
+        $userTwo = $this->createUser('', '', $generatedTags);
+
+        // actual testing
+
+        $this->intercomeoService->tagUsers([$userOne, $userTwo], $additionalTag);
+
+        $tagsStoredForUserOne = $this->intercomeoService->getTagsFromUser($userOne);
+        $tagsStoredForUserTwo = $this->intercomeoService->getTagsFromUser($userTwo);
+
+        $this->assertEquals($tagsStoredForUserOne, $tagsStoredForUserTwo);
+
+        $combinedTags = array_merge(
+            $generatedTags,
+            [$additionalTag]
+        );
+
+        sort($combinedTags);
+        $tagsStored = array_unique(
+            array_merge($tagsStoredForUserOne, $tagsStoredForUserTwo),
+            SORT_STRING
+        );
+        sort($tagsStored);
+
+        $this->assertEquals($combinedTags, $tagsStored);
     }
 
     public function test_add_multiple_tags_to_single_users()
