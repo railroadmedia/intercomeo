@@ -5,7 +5,6 @@ namespace Railroad\Intercomeo\Listeners;
 use Illuminate\Database\DatabaseManager;
 use Intercom\IntercomClient;
 use Railroad\Intercomeo\Events\MemberAdded;
-use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use Railroad\Intercomeo\Services\IntercomeoService;
 
 class MemberAddedEventListener
@@ -13,14 +12,12 @@ class MemberAddedEventListener
     private $intercomClient;
     private $queryIntercomUsersTable;
     private $databaseManager;
-    private $intercomUsersRepository;
     private $intercomeoService;
 
     public function __construct(
         IntercomClient $intercomClient,
         DatabaseManager $databaseManager,
-        IntercomeoService $intercomeoService,
-        IntercomUsersRepository $intercomUsersRepository
+        IntercomeoService $intercomeoService
     )
     {
         /*
@@ -34,7 +31,6 @@ class MemberAddedEventListener
 
         $this->databaseManager = $databaseManager;
         $this->intercomeoService = $intercomeoService;
-        $this->intercomUsersRepository = $intercomUsersRepository;
     }
 
     public function handle(MemberAdded $event)

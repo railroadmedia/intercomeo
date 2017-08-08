@@ -3,20 +3,16 @@
 namespace Railroad\Intercomeo\Listeners;
 
 use Railroad\Intercomeo\Events\ApplicationReceivedRequest;
-use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use Railroad\Intercomeo\Services\IntercomeoService;
 
 class ApplicationReceivedRequestEventListener
 {
-    private $intercomUsersRepository;
     private $intercomeoService;
 
     public function __construct(
-        IntercomUsersRepository $intercomUsersRepository,
         IntercomeoService $intercomeoService
     )
     {
-        $this->intercomUsersRepository = $intercomUsersRepository;
         $this->intercomeoService = $intercomeoService;
     }
 
@@ -33,7 +29,11 @@ class ApplicationReceivedRequestEventListener
         $user = $this->intercomeoService->getUserCreateIfDoesNotYetExist($userId, $email);
 
         $newTime = $this->intercomeoService->calculateLatestActivityTimeToStore($utcTimestamp);
-        $stored = $this->intercomUsersRepository->getLastRequestAt($userId);
+
+        // todo: remove & replace given that we're getting rid of DB usage (170808) - PICK UP HERE WEDNESDAY (?)
+        // todo: remove & replace given that we're getting rid of DB usage (170808) - PICK UP HERE WEDNESDAY (?)
+        // todo: remove & replace given that we're getting rid of DB usage (170808) - PICK UP HERE WEDNESDAY (?)
+        // $stored = $this->intercomUsersRepository->getLastRequestAt($userId);
 
         if($newTime > $stored){
             $this->intercomeoService->storeLatestActivity($user, $newTime);

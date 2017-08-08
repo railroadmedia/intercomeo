@@ -9,7 +9,6 @@ use Intercom\IntercomClient;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Railroad\Intercomeo\Events\MemberAdded;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
-use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use Railroad\Intercomeo\Services\IntercomeoService;
 use stdClass;
 
@@ -23,9 +22,6 @@ class TestCase extends BaseTestCase
 
     /** * @var IntercomClient */
     protected $intercomClient;
-
-    /** @var IntercomUsersRepository */
-    protected $usersRepository;
 
     /** @var IntercomeoService $intercomeoService */
     protected $intercomeoService;
@@ -45,7 +41,6 @@ class TestCase extends BaseTestCase
         $this->intercomClient = resolve('Intercom\IntercomClient');
 
         $this->faker = $this->app->make(Generator::class);
-        $this->usersRepository = $this->app->make(IntercomUsersRepository::class);
         $this->intercomeoService = $this->app->make(IntercomeoService::class);
 
         Carbon::setTestNow(Carbon::now());

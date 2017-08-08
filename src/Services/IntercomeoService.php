@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Intercom\IntercomClient;
-use Railroad\Intercomeo\Repositories\IntercomUsersRepository;
 use stdClass;
 
 class IntercomeoService
@@ -18,19 +17,16 @@ class IntercomeoService
     ];
 
     private $intercomClient;
-    private $intercomUsersRepository;
 
     /*
      * FYI IntercomClient is created as singleton in service
      * provide because we need to set the api credentials.
      */
     public function __construct(
-        IntercomClient $intercomClient,
-        IntercomUsersRepository $intercomUsersRepository
+        IntercomClient $intercomClient
     )
     {
         $this->intercomClient = $intercomClient;
-        $this->intercomUsersRepository = $intercomUsersRepository;
     }
 
     /**
@@ -42,9 +38,7 @@ class IntercomeoService
     {
         $user = $this->intercomClient->users->create([ "user_id" => $userId, "email" => $email ]);
 
-        $success = $this->validUserCreated($user, $userId, $email ) && $this->intercomUsersRepository->store($userId);
-
-        if(!$success){
+        if(!$this->validUserCreated($user, $userId, $email)){
             Log::error('\Railroad\Intercomeo\Services\IntercomeoService::storeUser failed to for user ' . $userId);
             return false;
         }
@@ -115,14 +109,10 @@ class IntercomeoService
         $userId = $user->user_id;
         $utcTimestamp = $utcTimestamp ?? time();
 
-        $user = $this->intercomClient->users->create([
+        return $this->intercomClient->users->create([
             'user_id' => $userId,
             'last_request_at' => $utcTimestamp
         ]);
-
-        $stored = $this->intercomUsersRepository->store($userId, $utcTimestamp);
-
-        return $user && $stored;
     }
 
     /**

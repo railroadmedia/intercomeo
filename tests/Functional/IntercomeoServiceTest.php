@@ -58,6 +58,10 @@ class IntercomeoServiceTest extends TestCase
      */
     public function test_store_last_updated_in_database()
     {
+        $this->markTestIncomplete(
+            '"test_store_last_updated_in_database" is obsolete. Replace with tests for whatever replaced DB usage in last_request_at eval'
+        );
+
         $user = $this->createUser();
 
         $knownDate = time();
