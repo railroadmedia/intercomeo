@@ -30,11 +30,7 @@ class ApplicationReceivedRequestEventListener
             $utcTimestamp = time();
         }
 
-        if(!$this->intercomeoService->doesUserExistInIntercomAlready($userId)){
-            $user = $this->intercomeoService->storeUser($userId, $email);
-        }else{
-            $user = $this->intercomeoService->getUser($userId);
-        };
+        $user = $this->intercomeoService->getUserCreateIfDoesNotYetExist($userId, $email);
 
         $newTime = $this->intercomeoService->calculateLatestActivityTimeToStore($utcTimestamp);
         $stored = $this->intercomUsersRepository->getLastRequestAt($userId);

@@ -70,36 +70,20 @@ class IntercomeoService
         return $user;
     }
 
-
     /**
      * @param $userId
-     * @return bool
-     *
-     * First checks our DB because that's quicker. If nothing in DB, then checks Intercom's record just to be sure.
+     * @param $email
+     * @return bool|stdClass
      */
-    public function doesUserExistInIntercomAlready($userId)
+    public function getUserCreateIfDoesNotYetExist($userId, $email)
     {
-        $exists = !empty($this->intercomUsersRepository->get($userId));
+        $user = $this->getUser($userId);
 
-        if(!$exists){
-
-            $user = $this->getUser($userId);
-
-            if($user){
-                $exists = (
-                    ($user->type === 'user') &&
-                    ($user->user_id === $userId) &&
-                    !empty($user->id) &&
-                    ($user->app_id === config('intercomeo.app_id'))
-                );
-
-                if($exists){
-                    Log::error('User ' . $userId . ' exists in intercom but not in our database.');
-                }
-            }
+        if(!$user){
+            $user = $this->storeUser($userId, $email);
         }
 
-        return $exists;
+        return $user;
     }
 
     /**
