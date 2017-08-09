@@ -253,4 +253,20 @@ class IntercomeoService
 
         return false;
     }
+
+    public function lastRequestAtUpdateEvaluationAndAction(
+        $userId,
+        $email,
+        $timeOfRequest,
+        $timeOfPreviousRequest
+    )
+    {
+        $user = $this->getUserCreateIfDoesNotYetExist($userId, $email);
+
+        $timeOfRequestProcessed = $this->calculateLatestActivityTimeToStore($timeOfRequest);
+
+        if($timeOfRequestProcessed > $timeOfPreviousRequest){
+            $this->storeLatestActivity($user, $timeOfRequestProcessed);
+        }
+    }
 }

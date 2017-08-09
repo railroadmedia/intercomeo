@@ -404,4 +404,14 @@ class IntercomeoServiceTest extends TestCase
             $usersTagsAfterRemoval
         );
     }
+
+    public function test_last_request_at_processing_no_update()
+    {
+        
+    }
+
+    public function test_last_request_at_processing_update()
+    {
+
+    }
 }
