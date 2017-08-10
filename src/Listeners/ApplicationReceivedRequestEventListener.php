@@ -9,18 +9,14 @@ class ApplicationReceivedRequestEventListener
 {
     private $intercomeoService;
 
-    public function __construct(
-        IntercomeoService $intercomeoService
-    )
+    public function __construct(IntercomeoService $intercomeoService)
     {
         $this->intercomeoService = $intercomeoService;
     }
 
     public function handle(ApplicationReceivedRequest $applicationReceivedRequest)
     {
-        if(config(
-            'intercomeo.only_track_last_request_at_for_users_already_in_intercom'
-        )){
+        if (config('intercomeo.only_track_last_request_at_for_users_already_in_intercom')) {
             $this->intercomeoService->lastRequestAtUpdateEvaluationAndAction(
                 $this->intercomeoService->getUser($applicationReceivedRequest->userId),
                 $applicationReceivedRequest->previousRequestTimestamp,

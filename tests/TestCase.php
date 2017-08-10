@@ -7,7 +7,7 @@ use Faker\Generator;
 use Illuminate\Database\DatabaseManager;
 use Intercom\IntercomClient;
 use Orchestra\Testbench\TestCase as BaseTestCase;
-use Railroad\Intercomeo\Events\MemberAdded;
+use Railroad\Intercomeo\Events\UserCreated;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
 use Railroad\Intercomeo\Services\IntercomeoService;
 use stdClass;
@@ -213,7 +213,7 @@ class TestCase extends BaseTestCase
             $tags = $this->getTagsForGeneratedUser($userDetails);
         }
 
-        event(new MemberAdded($userId, $email, $tags));
+        event(new UserCreated($userId, $email, $tags));
         $user = $this->intercomeoService->getUser($userId);
         if(!is_object($user)){
             $this->assertIsUser($user);

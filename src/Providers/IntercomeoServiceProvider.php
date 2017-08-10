@@ -5,9 +5,9 @@ namespace Railroad\Intercomeo\Providers;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Intercom\IntercomClient;
 use Railroad\Intercomeo\Events\ApplicationReceivedRequest;
-use Railroad\Intercomeo\Events\MemberAdded;
+use Railroad\Intercomeo\Events\UserCreated;
 use Railroad\Intercomeo\Listeners\ApplicationReceivedRequestEventListener;
-use Railroad\Intercomeo\Listeners\MemberAddedEventListener;
+use Railroad\Intercomeo\Listeners\UserCreatedEventListener;
 
 class IntercomeoServiceProvider extends ServiceProvider
 {
@@ -15,8 +15,12 @@ class IntercomeoServiceProvider extends ServiceProvider
     protected $intercomAccessToken;
 
     protected $listen = [
-        MemberAdded::class => [MemberAddedEventListener::class . '@handle'],
-        ApplicationReceivedRequest::class => [ApplicationReceivedRequestEventListener::class . '@handle']
+        UserCreated::class => [
+            UserCreatedEventListener::class . '@handle'
+        ],
+        ApplicationReceivedRequest::class => [
+            ApplicationReceivedRequestEventListener::class . '@handle'
+        ]
     ];
 
     /**
@@ -30,6 +34,7 @@ class IntercomeoServiceProvider extends ServiceProvider
 
         $destination = __DIR__ . '/../../../../../laravel/config';
         $origin = __DIR__ . '/../../config';
+        
         $this->publishes([$origin => $destination]);
         $this->loadMigrationsFrom(__DIR__ . '/../../migrations');
     }
@@ -41,8 +46,11 @@ class IntercomeoServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton( 'Intercom\IntercomClient', function ($app){
-            return new IntercomClient(config('intercomeo.access_token'), null);
-        } );
+        $this->app->singleton(
+            'Intercom\IntercomClient',
+            function ($app) {
+                return new IntercomClient(config('intercomeo.access_token'), null);
+            }
+        );
     }
 }
