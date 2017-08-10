@@ -24,9 +24,11 @@ Note about the term "user_id"
 Overview of Functionality
 -------------------------
 
+
 ### Add user to Intercom
 
 Fire `Railroad\Intercomeo\Events\MemberAdded` event, passing in user-id, email, and (optionally) tags for that user.
+
 
 ### Storing When a User Was Last Active
 
@@ -40,8 +42,8 @@ This will evaluate whether the user's activity for the current "time block" as a
 
 1. user_id
 2. email
-3. request time (timestamp)
-4. previous request (timestamp)
+3. request time (timestamp, UTC)
+4. previous request (timestamp, UTC)
 
 
 #### Details
@@ -51,7 +53,7 @@ Note that all all time is handled in UTC timestamps (Unix Time).
 Intercom's user model has a "last_request_at" property ([reference](
 https://developers.intercom.com/v2.0/reference#user-model)). If we were to set this with every request, it would an inefficient use of our API rate-limits though. So, we'll decide a "buffer time amount", and save the last_request_time with that amount as an acceptable amount of inaccuracy.
 
-*The default "buffer time amount" is one hour. You can change this in the config.*
+*The default "buffer time amount" is set and can be overridden in the config.*
 
 
 
@@ -74,6 +76,8 @@ To get environmental variables for running your tests, add them to the package's
 </phpunit>
 ```
 
+***BE VERY CAREFUL NOT TO COMMIT THIS IF YOU'VE ADDED SECRETS*** 
+
 
 ### API Secrets for Integration-Testing
 
@@ -81,12 +85,3 @@ Set in *\Railroad\Intercomeo\Tests\**TestCase::getEnvironmentSetUp*** like this:
 
 ```php
 $app['config']->set('intercomeo.access_token', env('INTERCOM_ACCESS_TOKEN'));
-```
-
-Don't commit them - remove that file from version control if need be.
-
-
-Questions, Ruminations, Ponderings
----------------------------------
-
-Instead of adding IntercomeoServiceProvider to list of "providers" in `larevel/config/app.php`, can we add it the package somewhere?
