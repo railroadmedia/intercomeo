@@ -289,6 +289,8 @@ class IntercomeoServiceTest extends TestCase
 
         $usersTagsAfterRemoval = $this->intercomeoService->getTagsFromUser($user);
 
+        sort($usersTagsAfterRemoval);
+
         $this->assertEquals(
             $combinedTags,
             $usersTagsAfterRemoval
