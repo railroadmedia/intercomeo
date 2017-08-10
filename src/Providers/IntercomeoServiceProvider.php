@@ -32,7 +32,7 @@ class IntercomeoServiceProvider extends ServiceProvider
     {
         parent::boot();
 
-        $destination = __DIR__ . '/../../../../../laravel/config';
+        $destination = __DIR__ . '/../../../../../config';
         $origin = __DIR__ . '/../../config';
         
         $this->publishes([$origin => $destination]);
