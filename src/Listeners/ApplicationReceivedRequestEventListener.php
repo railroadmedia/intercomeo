@@ -17,27 +17,10 @@ class ApplicationReceivedRequestEventListener
 
     public function handle(ApplicationReceivedRequest $applicationReceivedRequest)
     {
-        $user = null;
-
-        try {
-            $user = $this->intercomeoService->getUserCreateIfDoesNotYetExist(
-                $applicationReceivedRequest->userId,
-                $applicationReceivedRequest->email
-            );
-        } catch (\Exception $exception) {
-            Log::error(
-                'user_id: ' .
-                $applicationReceivedRequest->userId .
-                ' was not successfully processed by ' .
-                '"\Railroad\Intercomeo\Listeners\ApplicationReceivedRequestEventListener::handle". ' .
-                'With error ' .
-                $exception->getMessage()
-            );
-        }
-
         try {
             $this->intercomeoService->lastRequestAtUpdateEvaluationAndAction(
-                $user,
+                $applicationReceivedRequest->userId,
+                $applicationReceivedRequest->email,
                 $applicationReceivedRequest->requestUtcTimestamp,
                 $applicationReceivedRequest->previousRequestUtcTimestamp
             );

@@ -103,18 +103,27 @@ class IntercomeoService
     }
 
     /**
-     * @param stdClass $user
+     * @param $userId
+     * @param $email
      * @param int $timeOfCurrentRequest
      * @param int|null $timeOfPreviousRequest
-     * @return bool|stdClass|Exception
+     * @return bool|Exception|stdClass
      */
     public function lastRequestAtUpdateEvaluationAndAction(
-        $user,
+        $userId,
+        $email,
         $timeOfCurrentRequest,
         $timeOfPreviousRequest = null
     ) {
         if (is_null($timeOfPreviousRequest) ||
-            $timeOfCurrentRequest - $timeOfPreviousRequest > config('intercomeo.last_request_buffer_unit')) {
+            $timeOfCurrentRequest - $timeOfPreviousRequest >
+            config('intercomeo.last_request_buffer_amount')) {
+
+            $user = $this->getUserCreateIfDoesNotYetExist(
+                $userId,
+                $email
+            );
+
             return $this->storeLatestActivity($user, $timeOfCurrentRequest);
         }
 
