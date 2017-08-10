@@ -155,7 +155,7 @@ class IntercomeoService
      * @param stdClass $user
      * @param int $timeOfCurrentRequest
      * @param int $timeOfPreviousRequest
-     * @return bool
+     * @return bool|stdClass|Exception
      */
     public function lastRequestAtUpdateEvaluationAndAction(
         $user,
@@ -208,9 +208,9 @@ class IntercomeoService
                     '\Railroad\Intercomeo\Services\IntercomeoService::tagUsers failed for tag ' .
                     $tagName .
                     ' for users ' .
-                    var_export($simplifiedUsers, true) .
+                    print_r($simplifiedUsers, true) .
                     ' with error: ' .
-                    var_export($exception, true)
+                    print_r($exception, true)
                 );
             }
         }

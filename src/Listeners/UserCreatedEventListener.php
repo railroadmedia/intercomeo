@@ -2,6 +2,7 @@
 
 namespace Railroad\Intercomeo\Listeners;
 
+use Illuminate\Support\Facades\Log;
 use Railroad\Intercomeo\Events\UserCreated;
 use Railroad\Intercomeo\Services\IntercomeoService;
 
@@ -30,7 +31,7 @@ class UserCreatedEventListener
                     ' call of ' .
                     '"\Railroad\Intercomeo\Services\IntercomeoService::storeUser"' .
                     ' failed with exception: ' .
-                    var_export($exception, true)
+                    print_r($exception, true)
             );
         }
 
@@ -43,7 +44,7 @@ class UserCreatedEventListener
                     ' call of ' .
                     '"\Railroad\Intercomeo\Services\IntercomeoService::tagUsers"' .
                     ' failed with exception: ' .
-                    var_export($exception, true)
+                    print_r($exception, true)
                 );
             }
         }
