@@ -16,15 +16,6 @@ class IntercomeoService
     private $intercomClient;
 
     /**
-     * @var array
-     */
-    public static $timeUnits = [
-        'day' => 'day',
-        'hour' => 'hour',
-        'minute' => 'minute'
-    ];
-
-    /**
      * IntercomeoService constructor.
      *
      * @param IntercomClient $intercomClient
@@ -113,45 +104,6 @@ class IntercomeoService
     }
 
     /**
-     * @param integer $utcTimestamp
-     * @return integer
-     */
-    public function roundTimeDownForLatestActivityRecord($utcTimestamp)
-    {
-        $buffer = config('intercomeo.last_request_buffer_amount');
-
-        $time = Carbon::createFromTimestampUTC($utcTimestamp);
-
-        switch (config('intercomeo.level_to_round_down_to')) {
-            case self::$timeUnits['day']:
-                $time->hour(0)->minute(0)->second(0);
-                break;
-            case self::$timeUnits['hour']:
-                $time->minute(0)->second(0);
-                break;
-            case self::$timeUnits['minute']:
-                $time->second(0);
-                break;
-        }
-
-        if ($buffer > 1) {
-            switch (config('intercomeo.last_request_buffer_unit')) {
-                case self::$timeUnits['day']:
-                    $time->subDays($buffer + 1);
-                    break;
-                case self::$timeUnits['hour']:
-                    $time->subHours($buffer + 1);
-                    break;
-                case self::$timeUnits['minute']:
-                    $time->subMinutes($buffer + 1);
-                    break;
-            }
-        }
-
-        return $time->timestamp;
-    }
-
-    /**
      * @param stdClass $user
      * @param int $timeOfCurrentRequest
      * @param int $timeOfPreviousRequest
@@ -162,10 +114,7 @@ class IntercomeoService
         $timeOfPreviousRequest,
         $timeOfCurrentRequest
     ) {
-        $timeOfPreviousRequest = $this->roundTimeDownForLatestActivityRecord($timeOfPreviousRequest);
-        $timeOfCurrentRequest = $this->roundTimeDownForLatestActivityRecord($timeOfCurrentRequest);
-
-        if ($timeOfCurrentRequest > $timeOfPreviousRequest) {
+        if ($timeOfCurrentRequest - $timeOfPreviousRequest > config('intercomeo.last_request_buffer_unit')) {
             return $this->storeLatestActivity($user, $timeOfCurrentRequest);
         }
 
