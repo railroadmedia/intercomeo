@@ -34,7 +34,6 @@ class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->artisan('migrate', []);
         $this->artisan('cache:clear', []);
 
         // created as singleton in service provide because we need to set the api credentials
@@ -70,19 +69,8 @@ class TestCase extends BaseTestCase
      */
     protected function getEnvironmentSetUp($app)
     {
-        $defaultConfig = require(__DIR__ . '/../config/intercomeo.php');
+//        $defaultConfig = require(__DIR__ . '/../config/intercomeo.php');
 
-        $app['config']->set('intercomeo.tables', $defaultConfig['tables']);
-        $app['config']->set('intercomeo.database_connection_name', 'testbench');
-        $app['config']->set('database.default', 'testbench');
-        $app['config']->set(
-            'database.connections.testbench',
-            [
-                'driver' => 'sqlite',
-                'database' => ':memory:',
-                'prefix' => '',
-            ]
-        );
         $app['config']->set('intercomeo.app_id', env('INTERCOM_APP_ID'));
         $app['config']->set('intercomeo.hmac_secret', env('INTERCOM_HMAC_SECRET'));
         $app['config']->set('intercomeo.access_token', env('INTERCOM_ACCESS_TOKEN'));
@@ -93,6 +81,11 @@ class TestCase extends BaseTestCase
         );
         $app['config']->set('intercomeo.last_request_buffer_unit', env('LAST_REQUEST_BUFFER_UNIT'));
         $app['config']->set('intercomeo.level_to_round_down_to', env('LEVEL_TO_ROUND_DOWN_TO'));
+
+        $app['config']->set(
+            'intercomeo.only_track_last_request_at_for_users_already_in_intercom',
+            env('ONLY_TRACK_LAST_REQUEST_AT_FOR_USERS_ALREADY_IN_INTERCOM')
+        );
     }
 
     /**

@@ -119,7 +119,7 @@ class IntercomeoService
      * @param integer $utcTimestamp
      * @return integer
      */
-    public function calculateLatestActivityTimeToStore($utcTimestamp)
+    public function roundTimeDownForLatestActivityRecord($utcTimestamp)
     {
         $buffer = config('intercomeo.last_request_buffer_amount');
 
@@ -152,6 +152,28 @@ class IntercomeoService
         }
 
         return $time->timestamp;
+    }
+
+
+    /**
+     * @param stdClass $user
+     * @param int $timeOfCurrentRequest
+     * @param int $timeOfPreviousRequest
+     * @return bool
+     */
+    public function lastRequestAtUpdateEvaluationAndAction(
+        $user,
+        $timeOfCurrentRequest,
+        $timeOfPreviousRequest
+    ){
+        $timeOfPreviousRequest = $this->roundTimeDownForLatestActivityRecord($timeOfPreviousRequest);
+        $timeOfCurrentRequest = $this->roundTimeDownForLatestActivityRecord($timeOfCurrentRequest);
+
+        if($timeOfCurrentRequest > $timeOfPreviousRequest){
+            $this->storeLatestActivity($user, $timeOfCurrentRequest);
+        }
+
+        return true;
     }
 
     /**
@@ -252,21 +274,5 @@ class IntercomeoService
         }
 
         return false;
-    }
-
-    public function lastRequestAtUpdateEvaluationAndAction(
-        $userId,
-        $email,
-        $timeOfRequest,
-        $timeOfPreviousRequest
-    )
-    {
-        $user = $this->getUserCreateIfDoesNotYetExist($userId, $email);
-
-        $timeOfRequestProcessed = $this->calculateLatestActivityTimeToStore($timeOfRequest);
-
-        if($timeOfRequestProcessed > $timeOfPreviousRequest){
-            $this->storeLatestActivity($user, $timeOfRequestProcessed);
-        }
     }
 }

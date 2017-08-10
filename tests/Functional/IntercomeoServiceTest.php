@@ -173,67 +173,6 @@ class IntercomeoServiceTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function test_update_last_request_at_when_required()
-    {
-        // set up
-
-        Carbon::setTestNow(Carbon::createFromTimestampUTC(time()));
-        $user = $this->createUser();
-        $userId = $user->user_id;
-
-        $knownTime = Carbon::now();
-
-        $timeThatWillBeReplaced = $knownTime->copy()->subDay()->timestamp;
-
-        $this->intercomeoService->storeLatestActivity(
-            $user,
-            $this->intercomeoService->calculateLatestActivityTimeToStore($timeThatWillBeReplaced)
-        );
-
-        // end of set up, test case proper start
-
-        $valueBeforeUpdate = $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($userId));
-
-        event(new ApplicationReceivedRequest($userId, $knownTime->timestamp));
-
-        $valueBeforeUpdateDayAdded = Carbon::createFromTimestampUTC($valueBeforeUpdate)->addDay()->getTimestamp();
-
-        $this->assertEquals(
-            $valueBeforeUpdateDayAdded,
-            $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($userId))
-        );
-    }
-
-    public function test_do_no_store_update_last_request_at_when_not_required()
-    {
-        // set up
-        Carbon::setTestNow(Carbon::createFromTimestampUTC(time()));
-        $user = $this->createUser();
-        $userId = $user->user_id;
-
-        $knownTime = Carbon::now();
-
-        $timeThatWillNotBeReplaced = $knownTime->copy()->timestamp;
-
-        $this->intercomeoService->storeLatestActivity(
-            $user,
-            $this->intercomeoService->calculateLatestActivityTimeToStore($timeThatWillNotBeReplaced)
-        );
-
-        // end of set up, test case proper start
-
-        $valueBeforeUpdate = $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($userId));
-
-        event(new ApplicationReceivedRequest($userId, $knownTime->timestamp));
-
-        $valueBeforeUpdateUnmodified = Carbon::createFromTimestampUTC($valueBeforeUpdate)->getTimestamp();
-
-        $this->assertEquals(
-            $valueBeforeUpdateUnmodified,
-            $this->intercomeoService->getLastRequestAt($this->intercomeoService->getUser($userId))
-        );
-    }
-
     public function test_get_tags_for_user(){
 
         // setup
@@ -405,13 +344,63 @@ class IntercomeoServiceTest extends TestCase
         );
     }
 
+    private function last_request_at_processing($minutesAddedToNewRequestTime)
+    {
+        // step 1: setup
+
+        if(
+            config('intercomeo.level_to_round_down_to') !== IntercomeoService::$timeUnits['hour']
+            ||
+            config('intercomeo.last_request_buffer_unit') !== IntercomeoService::$timeUnits['hour']
+            ||
+            config('intercomeo.last_request_buffer_amount') !== 1
+        ){
+            $this->fail(
+                'Default "time block interval" of one hour overridden, ' .
+                'test only works with default package values.'
+            );
+        }
+
+        $userDetails = $this->generateUserDetails();
+        $userId = $this->getUserIdForGeneratedUser($userDetails);
+        $email = $this->getEmailForGeneratedUser($userDetails);
+
+        $this->storeUser($userId, $email);
+
+        $randomTime = Carbon::createFromTimestampUTC(rand(1000000000, 2000000000));
+        $randomTimeRoundedToHour = Carbon::create(
+            $randomTime->year, $randomTime->month, $randomTime->day, $randomTime->hour
+        );
+
+        $previousRequestTime = $randomTimeRoundedToHour->copy()->addMinutes(rand(1,30))->getTimestamp();
+        $newRequestTime = $randomTimeRoundedToHour->copy()->addMinutes($minutesAddedToNewRequestTime)->getTimestamp();
+
+        if($previousRequestTime === $newRequestTime){
+            $this->assertNotEquals($previousRequestTime, $newRequestTime);
+        }
+
+        $user = $this->intercomeoService->getUser($userId);
+        $this->intercomeoService->storeLatestActivity($user, $previousRequestTime);
+
+        // step 2: test
+
+        event(new ApplicationReceivedRequest($userId, $email, $previousRequestTime, $newRequestTime));
+
+        return $this->intercomeoService->getLastRequestAt($user) === $newRequestTime;
+    }
+
     public function test_last_request_at_processing_no_update()
     {
-        
+        $result = $this->last_request_at_processing(rand(31,59));
+
+        $this->assertFalse($result);
+
     }
 
     public function test_last_request_at_processing_update()
     {
+        $result = $this->last_request_at_processing(rand(60,666));
 
+        $this->assertTrue($result);
     }
 }
