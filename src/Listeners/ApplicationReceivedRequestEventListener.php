@@ -31,7 +31,7 @@ class ApplicationReceivedRequestEventListener
                 ' was not successfully processed by ' .
                 '"\Railroad\Intercomeo\Listeners\ApplicationReceivedRequestEventListener::handle". ' .
                 'With error ' .
-                print_r($exception, true)
+                $exception->getMessage()
             );
         }
 
@@ -48,7 +48,7 @@ class ApplicationReceivedRequestEventListener
                 ' was not successfully processed by ' .
                 '"\Railroad\Intercomeo\Listeners\ApplicationReceivedRequestEventListener::handle". ' .
                 'With error ' .
-                print_r($exception, true)
+                $exception->getMessage()
             );
         }
 

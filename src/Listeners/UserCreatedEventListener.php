@@ -31,7 +31,7 @@ class UserCreatedEventListener
                     ' call of ' .
                     '"\Railroad\Intercomeo\Services\IntercomeoService::storeUser"' .
                     ' failed with exception: ' .
-                    print_r($exception, true)
+                    $exception->getMessage()
             );
         }
 
@@ -44,7 +44,7 @@ class UserCreatedEventListener
                     ' call of ' .
                     '"\Railroad\Intercomeo\Services\IntercomeoService::tagUsers"' .
                     ' failed with exception: ' .
-                    print_r($exception, true)
+                    $exception->getMessage()
                 );
             }
         }

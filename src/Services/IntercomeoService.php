@@ -210,7 +210,7 @@ class IntercomeoService
                     ' for users ' .
                     print_r($simplifiedUsers, true) .
                     ' with error: ' .
-                    print_r($exception, true)
+                    $exception->getMessage()
                 );
             }
         }
