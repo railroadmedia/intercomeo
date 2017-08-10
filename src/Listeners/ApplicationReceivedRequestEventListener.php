@@ -19,16 +19,12 @@ class ApplicationReceivedRequestEventListener
     {
         $user = null;
 
-        try{
-            if (config('intercomeo.only_track_last_request_at_for_users_already_in_intercom')) {
-                $user = $this->intercomeoService->getUser($applicationReceivedRequest->userId);
-            }else{
-                $user = $this->intercomeoService->getUserCreateIfDoesNotYetExist(
-                    $applicationReceivedRequest->userId,
-                    $applicationReceivedRequest->email
-                );
-            }
-        }catch(\Exception $exception){
+        try {
+            $user = $this->intercomeoService->getUserCreateIfDoesNotYetExist(
+                $applicationReceivedRequest->userId,
+                $applicationReceivedRequest->email
+            );
+        } catch (\Exception $exception) {
             Log::error(
                 'user_id: ' .
                 $applicationReceivedRequest->userId .
@@ -45,7 +41,7 @@ class ApplicationReceivedRequestEventListener
                 $applicationReceivedRequest->previousRequestTimestamp,
                 $applicationReceivedRequest->utcTimestamp
             );
-        }catch(\Exception $exception){
+        } catch (\Exception $exception) {
             Log::error(
                 'user_id: ' .
                 $applicationReceivedRequest->userId .
