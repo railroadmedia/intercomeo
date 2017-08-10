@@ -163,8 +163,8 @@ class IntercomeoService
      */
     public function lastRequestAtUpdateEvaluationAndAction(
         $user,
-        $timeOfCurrentRequest,
-        $timeOfPreviousRequest
+        $timeOfPreviousRequest,
+        $timeOfCurrentRequest
     ){
         $timeOfPreviousRequest = $this->roundTimeDownForLatestActivityRecord($timeOfPreviousRequest);
         $timeOfCurrentRequest = $this->roundTimeDownForLatestActivityRecord($timeOfCurrentRequest);

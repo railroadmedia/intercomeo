@@ -23,8 +23,8 @@ class ApplicationReceivedRequestEventListener
         )){
             $this->intercomeoService->lastRequestAtUpdateEvaluationAndAction(
                 $this->intercomeoService->getUser($applicationReceivedRequest->userId),
-                $applicationReceivedRequest->utcTimestamp,
-                $applicationReceivedRequest->previousRequestTimestamp
+                $applicationReceivedRequest->previousRequestTimestamp,
+                $applicationReceivedRequest->utcTimestamp
             );
 
             return true;
@@ -35,8 +35,8 @@ class ApplicationReceivedRequestEventListener
                 $applicationReceivedRequest->userId,
                 $applicationReceivedRequest->email
             ),
-            $applicationReceivedRequest->utcTimestamp,
-            $applicationReceivedRequest->previousRequestTimestamp
+            $applicationReceivedRequest->previousRequestTimestamp,
+            $applicationReceivedRequest->utcTimestamp
         );
 
         return true;

@@ -299,7 +299,7 @@ class IntercomeoServiceTest extends TestCase
 
     private function last_request_at_processing($minutesAddedToNewRequestTime)
     {
-        // step 1: setup
+        // ------------------------------ step 0 ------------------------------
 
         if(
             config('intercomeo.level_to_round_down_to') !== IntercomeoService::$timeUnits['hour']
@@ -314,6 +314,8 @@ class IntercomeoServiceTest extends TestCase
             );
         }
 
+        // ------------------------------ step 1: setup ------------------------------
+
         $userDetails = $this->generateUserDetails();
         $userId = $this->getUserIdForGeneratedUser($userDetails);
         $email = $this->getEmailForGeneratedUser($userDetails);
@@ -325,35 +327,115 @@ class IntercomeoServiceTest extends TestCase
             $randomTime->year, $randomTime->month, $randomTime->day, $randomTime->hour
         );
 
-        $previousRequestTime = $randomTimeRoundedToHour->copy()->addMinutes(rand(1,30))->getTimestamp();
-        $newRequestTime = $randomTimeRoundedToHour->copy()->addMinutes($minutesAddedToNewRequestTime)->getTimestamp();
-
-        if($previousRequestTime === $newRequestTime){
-            $this->assertNotEquals($previousRequestTime, $newRequestTime);
-        }
+        $timeOne = $randomTimeRoundedToHour->copy()->addMinutes(rand(1,30))->getTimestamp();
+        $timeTwo = $randomTimeRoundedToHour->copy()->addMinutes($minutesAddedToNewRequestTime)->getTimestamp();
 
         $user = $this->intercomeoService->getUser($userId);
-        $this->intercomeoService->storeLatestActivity($user, $previousRequestTime);
 
-        // step 2: test
+        $this->intercomeoService->storeLatestActivity(
+            $user,
+            $this->intercomeoService->roundTimeDownForLatestActivityRecord($timeOne)
+        );
 
-        event(new ApplicationReceivedRequest($userId, $email, $previousRequestTime, $newRequestTime));
+        // ------------------------------ step 2: test ------------------------------
 
-        return $this->intercomeoService->getLastRequestAt($user) === $newRequestTime;
+        event(new ApplicationReceivedRequest($userId, $email, $timeOne, $timeTwo));
+
+        // ------------------------------ step 3: assertions ------------------------------
+
+        $user = $this->intercomeoService->getUser($userId);
+
+        $timeTwoRoundedDown = $this->intercomeoService->roundTimeDownForLatestActivityRecord($timeTwo);
+
+        return $timeTwoRoundedDown === $this->intercomeoService->roundTimeDownForLatestActivityRecord($timeOne);
     }
 
     public function test_last_request_at_processing_no_update()
     {
-        $result = $this->last_request_at_processing(rand(31,59));
-
-        $this->assertFalse($result);
-
+        $this->assertTrue($this->last_request_at_processing(rand(31,59)));
     }
 
     public function test_last_request_at_processing_update()
     {
-        $result = $this->last_request_at_processing(rand(60,666));
+        $this->assertFalse($this->last_request_at_processing(rand(60,666)));
+    }
 
-        $this->assertTrue($result);
+    public function test_can_pass_value_through_roundTimeDownForLatestActivityRecord_repeatedly_without_change()
+    {
+        $randomTime = Carbon::createFromTimestampUTC(rand(1000000000, 2000000000));
+        $randomTimeRoundedToHour = Carbon::create(
+            $randomTime->year, $randomTime->month, $randomTime->day, $randomTime->hour
+        );
+
+        $timeOne = $randomTimeRoundedToHour->copy()->getTimestamp();
+        $timeTwo = $randomTimeRoundedToHour->copy()->addMinutes(rand(1,59))->getTimestamp();
+
+        $timeThree = $this->intercomeoService->roundTimeDownForLatestActivityRecord($timeOne);
+        $timeFour = $this->intercomeoService->roundTimeDownForLatestActivityRecord($timeTwo);
+        $timeFive = $this->intercomeoService->roundTimeDownForLatestActivityRecord($timeFour);
+        $timeSix = $this->intercomeoService->roundTimeDownForLatestActivityRecord($timeFive);
+        $timeSeven = $this->intercomeoService->roundTimeDownForLatestActivityRecord($timeSix);
+
+        $arrayOfValuesThatShouldAllBeTheSame = [
+            $timeTwo,
+            $timeThree,
+            $timeFour,
+            $timeFive,
+            $timeSix,
+            $timeSeven
+        ];
+
+        $this->assertTrue(
+            count(array_unique([$arrayOfValuesThatShouldAllBeTheSame])) === 1
+        );
+
+    }
+
+    public function test_processing_correctly_sub_hour()
+    {
+        $minutesAddedToNewRequestTime = rand(1,59);
+
+        $userDetails = $this->generateUserDetails();
+        $userId = $this->getUserIdForGeneratedUser($userDetails);
+        $email = $this->getEmailForGeneratedUser($userDetails);
+
+        $this->storeUser($userId, $email);
+
+        $randomTime = Carbon::createFromTimestampUTC(rand(1000000000, 2000000000));
+        $randomTimeRoundedToHour = Carbon::create(
+            $randomTime->year, $randomTime->month, $randomTime->day, $randomTime->hour
+        );
+
+        $timeOne = $randomTimeRoundedToHour->copy()->addMinutes(rand(1,30))->getTimestamp();
+        $timeTwo = $randomTimeRoundedToHour->copy()->addMinutes($minutesAddedToNewRequestTime)->getTimestamp();
+
+        $this->assertEquals(
+            $this->intercomeoService->roundTimeDownForLatestActivityRecord($timeOne),
+            $this->intercomeoService->roundTimeDownForLatestActivityRecord($timeTwo)
+        );
+    }
+
+    public function test_processing_correctly_over_hour()
+    {
+        $minutesAddedToNewRequestTime = rand(60, 666);
+
+        $userDetails = $this->generateUserDetails();
+        $userId = $this->getUserIdForGeneratedUser($userDetails);
+        $email = $this->getEmailForGeneratedUser($userDetails);
+
+        $this->storeUser($userId, $email);
+
+        $randomTime = Carbon::createFromTimestampUTC(rand(1000000000, 2000000000));
+        $randomTimeRoundedToHour = Carbon::create(
+            $randomTime->year, $randomTime->month, $randomTime->day, $randomTime->hour
+        );
+
+        $timeOne = $randomTimeRoundedToHour->copy()->addMinutes(rand(1,30))->getTimestamp();
+        $timeTwo = $randomTimeRoundedToHour->copy()->addMinutes($minutesAddedToNewRequestTime)->getTimestamp();
+
+        $this->assertNotEquals(
+            $this->intercomeoService->roundTimeDownForLatestActivityRecord($timeOne),
+            $this->intercomeoService->roundTimeDownForLatestActivityRecord($timeTwo)
+        );
     }
 }
