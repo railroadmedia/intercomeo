@@ -23,13 +23,13 @@
         <env name="QUEUE_DRIVER" value="sync"/>
         <env name="MAIL_DRIVER" value="log"/>
 
-        <!-- ================================================= -->
-        <!--   Add values here as needed, but DO NOT COMMIT    -->
-        <!-- Add it to .gitignore, with "/phpunit.xml" perhaps -->
-        <!-- ================================================= -->
+        <!-- ========================================================= -->
+        <!-- ==== If you add values here DO NOT COMMIT them (!!!) ==== -->
+        <!-- ========================================================= -->
         <env name="INTERCOM_APP_ID" value="___YOUR_VALUES_HERE___"/>
         <env name="INTERCOM_HMAC_SECRET" value="___YOUR_VALUES_HERE___"/>
         <env name="INTERCOM_ACCESS_TOKEN" value="___YOUR_VALUES_HERE___"/>
+        <!-- ========================================================= -->
 
         <env name="LAST_REQUEST_BUFFER_AMOUNT" value="1"/>
         <env name="LAST_REQUEST_BUFFER_UNIT" value="hour"/>
