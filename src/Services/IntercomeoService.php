@@ -10,21 +10,26 @@ use stdClass;
 
 class IntercomeoService
 {
+    /**
+     * @var IntercomClient
+     */
+    private $intercomClient;
+
+    /**
+     * @var array
+     */
     public static $timeUnits = [
         'day' => 'day',
         'hour' => 'hour',
         'minute' => 'minute'
     ];
 
-    private $intercomClient;
-
-    /*
-     * FYI IntercomClient is created as singleton in service
-     * provide because we need to set the api credentials.
+    /**
+     * IntercomeoService constructor.
+     *
+     * @param IntercomClient $intercomClient
      */
-    public function __construct(
-        IntercomClient $intercomClient
-    )
+    public function __construct(IntercomClient $intercomClient)
     {
         $this->intercomClient = $intercomClient;
     }
@@ -36,10 +41,12 @@ class IntercomeoService
      */
     public function storeUser($userId, $email)
     {
-        $user = $this->intercomClient->users->create([ "user_id" => $userId, "email" => $email ]);
+        $user = $this->intercomClient->users->create(["user_id" => $userId, "email" => $email]);
 
-        if(!$this->validUserCreated($user, $userId, $email)){
-            Log::error('\Railroad\Intercomeo\Services\IntercomeoService::storeUser failed to for user ' . $userId);
+        if (!$this->validUserCreated($user, $userId, $email)) {
+            Log::error(
+                '\Railroad\Intercomeo\Services\IntercomeoService::storeUser failed to for user ' . $userId
+            );
             return false;
         }
 
@@ -73,7 +80,7 @@ class IntercomeoService
     {
         $user = $this->getUser($userId);
 
-        if(!$user){
+        if (!$user) {
             $user = $this->storeUser($userId, $email);
         }
 
@@ -95,7 +102,7 @@ class IntercomeoService
      */
     public function getLastRequestAt(stdClass $user)
     {
-        return (integer) $user->last_request_at;
+        return (integer)$user->last_request_at;
     }
 
     /**
@@ -109,10 +116,12 @@ class IntercomeoService
         $userId = $user->user_id;
         $utcTimestamp = $utcTimestamp ?? time();
 
-        return $this->intercomClient->users->create([
-            'user_id' => $userId,
-            'last_request_at' => $utcTimestamp
-        ]);
+        return $this->intercomClient->users->create(
+            [
+                'user_id' => $userId,
+                'last_request_at' => $utcTimestamp
+            ]
+        );
     }
 
     /**
@@ -125,7 +134,7 @@ class IntercomeoService
 
         $time = Carbon::createFromTimestampUTC($utcTimestamp);
 
-        switch(config('intercomeo.level_to_round_down_to')){
+        switch (config('intercomeo.level_to_round_down_to')) {
             case self::$timeUnits['day']:
                 $time->hour(0)->minute(0)->second(0);
                 break;
@@ -137,8 +146,8 @@ class IntercomeoService
                 break;
         }
 
-        if($buffer > 1){
-            switch(config('intercomeo.last_request_buffer_unit')){
+        if ($buffer > 1) {
+            switch (config('intercomeo.last_request_buffer_unit')) {
                 case self::$timeUnits['day']:
                     $time->subDays($buffer + 1);
                     break;
@@ -154,7 +163,6 @@ class IntercomeoService
         return $time->timestamp;
     }
 
-
     /**
      * @param stdClass $user
      * @param int $timeOfCurrentRequest
@@ -165,11 +173,11 @@ class IntercomeoService
         $user,
         $timeOfPreviousRequest,
         $timeOfCurrentRequest
-    ){
+    ) {
         $timeOfPreviousRequest = $this->roundTimeDownForLatestActivityRecord($timeOfPreviousRequest);
         $timeOfCurrentRequest = $this->roundTimeDownForLatestActivityRecord($timeOfCurrentRequest);
 
-        if($timeOfCurrentRequest > $timeOfPreviousRequest){
+        if ($timeOfCurrentRequest > $timeOfPreviousRequest) {
             $this->storeLatestActivity($user, $timeOfCurrentRequest);
         }
 
@@ -183,14 +191,14 @@ class IntercomeoService
      */
     public function getTagsFromUser($user, $checkForNew = true)
     {
-        if($checkForNew){
+        if ($checkForNew) {
             $user = $this->getUser($user->user_id);
         }
 
         $tags = $user->tags->tags;
 
         $tagsSimple = [];
-        foreach($tags as $tag){
+        foreach ($tags as $tag) {
             $tagsSimple[] = $tag->name;
         }
 
@@ -209,40 +217,44 @@ class IntercomeoService
         $simplifiedUsers = [];
         $creationFailed = false;
 
-        if(!is_array($users)){
+        if (!is_array($users)) {
             $users = [$users];
         }
 
-        if(!is_array($tags)){
+        if (!is_array($tags)) {
             $tags = [$tags];
         }
 
-        foreach($users as $user){
-            if(!is_object($user)){
+        foreach ($users as $user) {
+            if (!is_object($user)) {
                 return false;
-            }else{
-                if(!get_class($user) === stdClass::class){
-                    Log::error('User was passed to \Railroad\Intercomeo\Services\IntercomeoService::tagUsers but' .
-                    ' was not stdClass object as requires');
+            } else {
+                if (!get_class($user) === stdClass::class) {
+                    Log::error(
+                        'User was passed to \Railroad\Intercomeo\Services\IntercomeoService::tagUsers but' .
+                        ' was not stdClass object as requires'
+                    );
                     return false;
-                }else{
+                } else {
                     $simplifiedUsers[] = ['user_id' => $user->user_id, 'untag' => $untag];
                 }
             }
         }
 
-        foreach($tags as $tagName){
-            $tag = $this->intercomClient->tags->tag([
-                'name' => $tagName,
-                'users' => $simplifiedUsers
-            ]);
+        foreach ($tags as $tagName) {
+            $tag = $this->intercomClient->tags->tag(
+                [
+                    'name' => $tagName,
+                    'users' => $simplifiedUsers
+                ]
+            );
 
             $successfulCreation =
                 ($tag->type === 'tag') &&
                 ($tag->name === $tagName) &&
                 !empty($tag->id);
 
-            if(!$successfulCreation){
+            if (!$successfulCreation) {
                 $creationFailed = true;
             }
         }
@@ -261,10 +273,16 @@ class IntercomeoService
         return $this->tagUsers($users, $tags, true);
     }
 
+    /**
+     * @param $apiCallResult
+     * @param $userId
+     * @param null $email
+     * @return bool
+     */
     public function validUserCreated($apiCallResult, $userId, $email = null)
     {
-        if(is_object($apiCallResult)){
-            if(get_class($apiCallResult) == stdClass::class){
+        if (is_object($apiCallResult)) {
+            if (get_class($apiCallResult) == stdClass::class) {
                 return ($apiCallResult->type === 'user') &&
                     !empty($apiCallResult->id) &&
                     (!is_null($userId) ? $apiCallResult->user_id == $userId : true) &&
