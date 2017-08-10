@@ -276,4 +276,46 @@ class TestCase extends BaseTestCase
         );
     }
 
+    /**
+     * @param $apiCallResult
+     * @param $userId
+     * @param null $email
+     * @return bool
+     */
+    public function validUserCreated($apiCallResult, $userId, $email = null)
+    {
+        if (is_object($apiCallResult)) {
+            if (get_class($apiCallResult) == stdClass::class) {
+                return ($apiCallResult->type === 'user') &&
+                    !empty($apiCallResult->id) &&
+                    (!is_null($userId) ? $apiCallResult->user_id == $userId : true) &&
+                    (!is_null($email) ? $apiCallResult->email == $email : true) &&
+                    ($apiCallResult->app_id === config('intercomeo.app_id'));
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param stdClass $user
+     * @return array
+     */
+    protected function getTagsFromUser($user)
+    {
+        try{
+            $user = $this->intercomeoService->getUser($user->user_id);
+        }catch(\Exception $exception){
+            $this->fail('Exception caught by TestCase::getTagsFromUser');
+        }
+
+        $tags = $user->tags->tags;
+
+        $tagsSimple = [];
+        foreach ($tags as $tag) {
+            $tagsSimple[] = $tag->name;
+        }
+
+        return $tagsSimple;
+    }
 }

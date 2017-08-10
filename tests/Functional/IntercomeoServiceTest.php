@@ -8,9 +8,6 @@ use Railroad\Intercomeo\Services\IntercomeoService;
 
 class IntercomeoServiceTest extends TestCase
 {
-    /**
-     * interacts with Intercom API
-     */
     public function test_create_single_user_using_storeUser_method()
     {
         $userDetails = $this->generateUserDetails();
@@ -20,12 +17,11 @@ class IntercomeoServiceTest extends TestCase
         $this->storeUser($userId, $email);
 
         $userReturnedFromIntercom = $this->intercomeoService->getUser($userId);
-        $this->assertTrue($this->intercomeoService->validUserCreated($userReturnedFromIntercom, $userId));
+
+        $this->assertTrue(!empty($userReturnedFromIntercom));
+        $this->assertTrue(empty($userReturnedFromIntercom->error));
     }
 
-    /**
-     * interacts with Intercom API
-     */
     public function test_create_users_multiple_users()
     {
         $numberToCreate = rand(3, 6);
@@ -48,7 +44,8 @@ class IntercomeoServiceTest extends TestCase
 
             $userReturnedFromIntercom = $this->intercomeoService->getUser($userId);
 
-            $this->assertTrue($this->intercomeoService->validUserCreated($userReturnedFromIntercom, $userId));
+            $this->assertTrue(!empty($userReturnedFromIntercom));
+            $this->assertTrue(empty($userReturnedFromIntercom->error));
         }
     }
 
@@ -136,7 +133,7 @@ class IntercomeoServiceTest extends TestCase
 
         // actual testing
 
-        $tagsStored = $this->intercomeoService->getTagsFromUser($user);
+        $tagsStored = $this->getTagsFromUser($user);
 
         sort($generatedTags);
         sort($tagsStored);
@@ -166,7 +163,7 @@ class IntercomeoServiceTest extends TestCase
 
         $combinedTags = array_merge($generatedTags, $moreGeneratedTags);
 
-        $tagsStored = $this->intercomeoService->getTagsFromUser($user);
+        $tagsStored = $this->getTagsFromUser($user);
 
         sort($combinedTags);
         sort($tagsStored);
@@ -192,8 +189,8 @@ class IntercomeoServiceTest extends TestCase
 
         $this->intercomeoService->tagUsers([$userOne, $userTwo], $additionalTag);
 
-        $tagsStoredForUserOne = $this->intercomeoService->getTagsFromUser($userOne);
-        $tagsStoredForUserTwo = $this->intercomeoService->getTagsFromUser($userTwo);
+        $tagsStoredForUserOne = $this->getTagsFromUser($userOne);
+        $tagsStoredForUserTwo = $this->getTagsFromUser($userTwo);
 
         $this->assertEquals($tagsStoredForUserOne, $tagsStoredForUserTwo);
 
@@ -234,8 +231,8 @@ class IntercomeoServiceTest extends TestCase
 
         $this->intercomeoService->tagUsers([$userOne, $userTwo], $additionalTags);
 
-        $tagsStoredForUserOne = $this->intercomeoService->getTagsFromUser($userOne);
-        $tagsStoredForUserTwo = $this->intercomeoService->getTagsFromUser($userTwo);
+        $tagsStoredForUserOne = $this->getTagsFromUser($userOne);
+        $tagsStoredForUserTwo = $this->getTagsFromUser($userTwo);
 
         $this->assertEquals($tagsStoredForUserOne, $tagsStoredForUserTwo);
 
@@ -245,6 +242,7 @@ class IntercomeoServiceTest extends TestCase
         );
 
         sort($combinedTags);
+        array_unique($combinedTags);
         $tagsStored = array_unique(
             array_merge($tagsStoredForUserOne, $tagsStoredForUserTwo),
             SORT_STRING
@@ -274,7 +272,7 @@ class IntercomeoServiceTest extends TestCase
 
         $combinedTags = array_merge($generatedTags, $moreGeneratedTags);
 
-        $tagsStored = $this->intercomeoService->getTagsFromUser($user);
+        $tagsStored = $this->getTagsFromUser($user);
 
         sort($combinedTags);
         sort($tagsStored);
@@ -287,7 +285,7 @@ class IntercomeoServiceTest extends TestCase
 
         $this->intercomeoService->untagUsers($user, $tagToRemove);
 
-        $usersTagsAfterRemoval = $this->intercomeoService->getTagsFromUser($user);
+        $usersTagsAfterRemoval = $this->getTagsFromUser($user);
 
         sort($usersTagsAfterRemoval);
 

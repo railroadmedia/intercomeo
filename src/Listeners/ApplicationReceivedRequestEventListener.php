@@ -2,6 +2,7 @@
 
 namespace Railroad\Intercomeo\Listeners;
 
+use Illuminate\Support\Facades\Log;
 use Railroad\Intercomeo\Events\ApplicationReceivedRequest;
 use Railroad\Intercomeo\Services\IntercomeoService;
 
@@ -16,24 +17,44 @@ class ApplicationReceivedRequestEventListener
 
     public function handle(ApplicationReceivedRequest $applicationReceivedRequest)
     {
-        if (config('intercomeo.only_track_last_request_at_for_users_already_in_intercom')) {
+        $user = null;
+
+        try{
+            if (config('intercomeo.only_track_last_request_at_for_users_already_in_intercom')) {
+                $user = $this->intercomeoService->getUser($applicationReceivedRequest->userId);
+            }else{
+                $user = $this->intercomeoService->getUserCreateIfDoesNotYetExist(
+                    $applicationReceivedRequest->userId,
+                    $applicationReceivedRequest->email
+                );
+            }
+        }catch(\Exception $exception){
+            Log::error(
+                'user_id: ' .
+                $applicationReceivedRequest->userId .
+                ' was not successfully processed by ' .
+                '"\Railroad\Intercomeo\Listeners\ApplicationReceivedRequestEventListener::handle". ' .
+                'With error ' .
+                var_export($exception, true)
+            );
+        }
+
+        try {
             $this->intercomeoService->lastRequestAtUpdateEvaluationAndAction(
-                $this->intercomeoService->getUser($applicationReceivedRequest->userId),
+                $user,
                 $applicationReceivedRequest->previousRequestTimestamp,
                 $applicationReceivedRequest->utcTimestamp
             );
-
-            return true;
+        }catch(\Exception $exception){
+            Log::error(
+                'user_id: ' .
+                $applicationReceivedRequest->userId .
+                ' was not successfully processed by ' .
+                '"\Railroad\Intercomeo\Listeners\ApplicationReceivedRequestEventListener::handle". ' .
+                'With error ' .
+                var_export($exception, true)
+            );
         }
-
-        $this->intercomeoService->lastRequestAtUpdateEvaluationAndAction(
-            $this->intercomeoService->getUserCreateIfDoesNotYetExist(
-                $applicationReceivedRequest->userId,
-                $applicationReceivedRequest->email
-            ),
-            $applicationReceivedRequest->previousRequestTimestamp,
-            $applicationReceivedRequest->utcTimestamp
-        );
 
         return true;
     }

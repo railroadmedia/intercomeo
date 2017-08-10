@@ -37,51 +37,40 @@ class IntercomeoService
     /**
      * @param $userId
      * @param $email
-     * @return bool|stdClass
+     * @return stdClass|Exception
      */
     public function storeUser($userId, $email)
     {
-        $user = $this->intercomClient->users->create(["user_id" => $userId, "email" => $email]);
-
-        if (!$this->validUserCreated($user, $userId, $email)) {
-            Log::error(
-                '\Railroad\Intercomeo\Services\IntercomeoService::storeUser failed to for user ' . $userId
-            );
-            return false;
-        }
-
-        return $user;
+        return $this->intercomClient->users->create(["user_id" => $userId, "email" => $email]);
     }
 
     /**
      * @param string|integer $userId
-     * @return stdClass|bool
+     * @return stdClass|Exception
      * @see https://developers.intercom.com/v2.0/reference#user-model
      */
     public function getUser($userId)
     {
-        $user = false;
-
-        try {
-            $user = $this->intercomClient->users->getUsers(['user_id' => $userId]);
-        } catch (Exception $e) {
-            return $user;
-        }
-
-        return $user;
+        return $this->intercomClient->users->getUsers(['user_id' => $userId]);
     }
 
     /**
      * @param $userId
      * @param $email
-     * @return bool|stdClass
+     * @return stdClass|Exception
      */
     public function getUserCreateIfDoesNotYetExist($userId, $email)
     {
-        $user = $this->getUser($userId);
+        $user = null;
 
-        if (!$user) {
-            $user = $this->storeUser($userId, $email);
+        try{
+            $user = $this->getUser($userId);
+        }catch(Exception $e){
+            try{
+                $user = $this->storeUser($userId, $email);
+            }catch(Exception $e){
+                return $e;
+            }
         }
 
         return $user;
@@ -108,8 +97,7 @@ class IntercomeoService
     /**
      * @param stdClass $user
      * @param int $utcTimestamp
-     * @return bool
-     * @internal param int|string $userId
+     * @return stdClass|Exception
      */
     public function storeLatestActivity(stdClass $user, $utcTimestamp = null)
     {
@@ -178,31 +166,10 @@ class IntercomeoService
         $timeOfCurrentRequest = $this->roundTimeDownForLatestActivityRecord($timeOfCurrentRequest);
 
         if ($timeOfCurrentRequest > $timeOfPreviousRequest) {
-            $this->storeLatestActivity($user, $timeOfCurrentRequest);
+            return $this->storeLatestActivity($user, $timeOfCurrentRequest);
         }
 
         return true;
-    }
-
-    /**
-     * @param stdClass $user
-     * @param bool $checkForNew
-     * @return array
-     */
-    public function getTagsFromUser($user, $checkForNew = true)
-    {
-        if ($checkForNew) {
-            $user = $this->getUser($user->user_id);
-        }
-
-        $tags = $user->tags->tags;
-
-        $tagsSimple = [];
-        foreach ($tags as $tag) {
-            $tagsSimple[] = $tag->name;
-        }
-
-        return $tagsSimple;
     }
 
     /**
@@ -215,7 +182,6 @@ class IntercomeoService
     public function tagUsers($users, $tags, $untag = false)
     {
         $simplifiedUsers = [];
-        $creationFailed = false;
 
         if (!is_array($users)) {
             $users = [$users];
@@ -226,40 +192,30 @@ class IntercomeoService
         }
 
         foreach ($users as $user) {
-            if (!is_object($user)) {
-                return false;
-            } else {
-                if (!get_class($user) === stdClass::class) {
-                    Log::error(
-                        'User was passed to \Railroad\Intercomeo\Services\IntercomeoService::tagUsers but' .
-                        ' was not stdClass object as requires'
-                    );
-                    return false;
-                } else {
-                    $simplifiedUsers[] = ['user_id' => $user->user_id, 'untag' => $untag];
-                }
-            }
+            $simplifiedUsers[] = ['user_id' => $user->user_id, 'untag' => $untag];
         }
 
         foreach ($tags as $tagName) {
-            $tag = $this->intercomClient->tags->tag(
-                [
-                    'name' => $tagName,
-                    'users' => $simplifiedUsers
-                ]
-            );
-
-            $successfulCreation =
-                ($tag->type === 'tag') &&
-                ($tag->name === $tagName) &&
-                !empty($tag->id);
-
-            if (!$successfulCreation) {
-                $creationFailed = true;
+            try{
+                $this->intercomClient->tags->tag(
+                    [
+                        'name' => $tagName,
+                        'users' => $simplifiedUsers
+                    ]
+                );
+            }catch(Exception $exception){
+                Log::error(
+                    '\Railroad\Intercomeo\Services\IntercomeoService::tagUsers failed for tag ' .
+                    $tagName .
+                    ' for users ' .
+                    var_export($simplifiedUsers, true) .
+                    ' with error: ' .
+                    var_export($exception, true)
+                );
             }
         }
 
-        return !$creationFailed;
+        return true;
     }
 
     /**
@@ -271,26 +227,5 @@ class IntercomeoService
     public function untagUsers($users, $tags)
     {
         return $this->tagUsers($users, $tags, true);
-    }
-
-    /**
-     * @param $apiCallResult
-     * @param $userId
-     * @param null $email
-     * @return bool
-     */
-    public function validUserCreated($apiCallResult, $userId, $email = null)
-    {
-        if (is_object($apiCallResult)) {
-            if (get_class($apiCallResult) == stdClass::class) {
-                return ($apiCallResult->type === 'user') &&
-                    !empty($apiCallResult->id) &&
-                    (!is_null($userId) ? $apiCallResult->user_id == $userId : true) &&
-                    (!is_null($email) ? $apiCallResult->email == $email : true) &&
-                    ($apiCallResult->app_id === config('intercomeo.app_id'));
-            }
-        }
-
-        return false;
     }
 }

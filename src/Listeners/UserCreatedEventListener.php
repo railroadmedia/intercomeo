@@ -16,18 +16,36 @@ class UserCreatedEventListener
 
     public function handle(UserCreated $event)
     {
+        $user = null;
+
         $userId = $event->userId;
         $email = $event->email;
         $tags = $event->tags;
 
-        $user = $this->intercomeoService->storeUser($userId, $email);
-
-        if (!$user) {
-            return false;
+        try{
+            $user = $this->intercomeoService->storeUser($userId, $email);
+        }catch(\Exception $exception){
+            Log::error(
+                    '"\Railroad\Intercomeo\Listeners\UserCreatedEventListener::handle"' .
+                    ' call of ' .
+                    '"\Railroad\Intercomeo\Services\IntercomeoService::storeUser"' .
+                    ' failed with exception: ' .
+                    var_export($exception, true)
+            );
         }
 
         foreach ($tags as $tag) {
-            $this->intercomeoService->tagUsers($user, $tag);
+            try{
+                $this->intercomeoService->tagUsers($user, $tag);
+            }catch(\Exception $exception){
+                Log::error(
+                    '"\Railroad\Intercomeo\Listeners\UserCreatedEventListener::handle"' .
+                    ' call of ' .
+                    '"\Railroad\Intercomeo\Services\IntercomeoService::tagUsers"' .
+                    ' failed with exception: ' .
+                    var_export($exception, true)
+                );
+            }
         }
 
         return true;
