@@ -52,55 +52,6 @@ class IntercomeoServiceTest extends TestCase
         }
     }
 
-    /**
-     * interacts with database
-     * does *not* interact with Intercom API
-     */
-    public function test_store_last_updated_in_database()
-    {
-        $this->markTestIncomplete(
-            '"test_store_last_updated_in_database" is obsolete. Replace with tests for whatever replaced DB usage in last_request_at eval'
-        );
-
-        $user = $this->createUser();
-
-        $knownDate = time();
-        $this->intercomeoService->storeLatestActivity($user, $knownDate);
-
-        $this->assertEquals($knownDate, $this->usersRepository->getLastRequestAt($user->user_id));
-    }
-
-    /**
-     * interacts with database
-     * does *not* interact with Intercom API
-     */
-    public function test_when_user_already_exists_intercom_user_create_updates_only_supplied_fields()
-    {
-        $user = $this->createUser();
-
-        $this->intercomeoService->storeLatestActivity($user, time());
-
-        $userReturned = $this->intercomeoService->getUser($user->user_id);
-
-        $this->assertEquals($user->email, $userReturned->email);
-    }
-
-    public function test_store_user_attribute_last_request_at_for_first_time()
-    {
-        Carbon::setTestNow(Carbon::createFromTimestampUTC(time()));
-
-        $user = $this->createUser();
-
-        $this->intercomeoService->storeLatestActivity($user);
-
-        $userReturnedFromIntercom = $this->intercomClient->users->getUsers(['user_id' => $user->user_id]);
-        $timeReturned = Carbon::createFromTimestampUTC($userReturnedFromIntercom->last_request_at);
-        $fiveMinutesAgo = Carbon::now()->subMinutes(5);
-        $fiveSecondsFromNow = Carbon::now()->addSeconds(5);
-
-        $this->assertTrue($timeReturned->gt($fiveMinutesAgo) && $timeReturned->lt($fiveSecondsFromNow));
-    }
-
     public function test_store_user_attribute_last_request_at_for_first_time_and_passing_in_timestamp()
     {
         $user = $this->createUser();
