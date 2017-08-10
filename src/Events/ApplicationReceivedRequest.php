@@ -6,14 +6,14 @@ class ApplicationReceivedRequest
 {
     public $userId;
     public $email;
-    public $previousRequestTimestamp;
-    public $utcTimestamp;
+    public $requestUtcTimestamp;
+    public $previousRequestUtcTimestamp;
 
-    public function __construct($userId, $email, $previousRequestTimestamp, $utcTimestamp)
+    public function __construct($userId, $email, $requestUtcTimestamp, $previousRequestUtcTimestamp)
     {
         $this->userId = $userId;
         $this->email= $email;
-        $this->previousRequestTimestamp = $previousRequestTimestamp;
-        $this->utcTimestamp = $utcTimestamp;
+        $this->requestUtcTimestamp = $requestUtcTimestamp;
+        $this->previousRequestUtcTimestamp = $previousRequestUtcTimestamp;
     }
 }

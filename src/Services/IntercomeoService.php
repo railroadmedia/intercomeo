@@ -2,7 +2,6 @@
 
 namespace Railroad\Intercomeo\Services;
 
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Intercom\IntercomClient;
@@ -54,12 +53,12 @@ class IntercomeoService
     {
         $user = null;
 
-        try{
+        try {
             $user = $this->getUser($userId);
-        }catch(Exception $e){
-            try{
+        } catch (Exception $e) {
+            try {
                 $user = $this->storeUser($userId, $email);
-            }catch(Exception $e){
+            } catch (Exception $e) {
                 return $e;
             }
         }
@@ -106,15 +105,16 @@ class IntercomeoService
     /**
      * @param stdClass $user
      * @param int $timeOfCurrentRequest
-     * @param int $timeOfPreviousRequest
+     * @param int|null $timeOfPreviousRequest
      * @return bool|stdClass|Exception
      */
     public function lastRequestAtUpdateEvaluationAndAction(
         $user,
-        $timeOfPreviousRequest,
-        $timeOfCurrentRequest
+        $timeOfCurrentRequest,
+        $timeOfPreviousRequest = null
     ) {
-        if ($timeOfCurrentRequest - $timeOfPreviousRequest > config('intercomeo.last_request_buffer_unit')) {
+        if (is_null($timeOfPreviousRequest) ||
+            $timeOfCurrentRequest - $timeOfPreviousRequest > config('intercomeo.last_request_buffer_unit')) {
             return $this->storeLatestActivity($user, $timeOfCurrentRequest);
         }
 
@@ -145,14 +145,14 @@ class IntercomeoService
         }
 
         foreach ($tags as $tagName) {
-            try{
+            try {
                 $this->intercomClient->tags->tag(
                     [
                         'name' => $tagName,
                         'users' => $simplifiedUsers
                     ]
                 );
-            }catch(Exception $exception){
+            } catch (Exception $exception) {
                 Log::error(
                     '\Railroad\Intercomeo\Services\IntercomeoService::tagUsers failed for tag ' .
                     $tagName .

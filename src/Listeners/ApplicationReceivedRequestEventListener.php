@@ -38,8 +38,8 @@ class ApplicationReceivedRequestEventListener
         try {
             $this->intercomeoService->lastRequestAtUpdateEvaluationAndAction(
                 $user,
-                $applicationReceivedRequest->previousRequestTimestamp,
-                $applicationReceivedRequest->utcTimestamp
+                $applicationReceivedRequest->requestUtcTimestamp,
+                $applicationReceivedRequest->previousRequestUtcTimestamp
             );
         } catch (\Exception $exception) {
             Log::error(
