@@ -3,8 +3,9 @@
 namespace Railroad\Intercomeo\Services;
 
 use Exception;
-use Illuminate\Support\Facades\Log;
+use GuzzleHttp\Exception\GuzzleException;
 use Intercom\IntercomClient;
+use Railroad\Intercomeo\Exceptions\IntercomeoException;
 use stdClass;
 
 class IntercomeoService
@@ -26,164 +27,56 @@ class IntercomeoService
 
     /**
      * @param $userId
-     * @param $email
-     * @return stdClass|Exception
+     * @param array $attributes
+     * @return stdClass
+     * @throws IntercomeoException
      */
-    public function storeUser($userId, $email)
+    public function syncUser($userId, array $attributes)
     {
-        return $this->intercomClient->users->create(["user_id" => $userId, "email" => $email]);
+        try {
+            return $this->intercomClient->users->create(array_merge(["user_id" => $userId], $attributes));
+        } catch (GuzzleException $exception) {
+            throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
+        }
     }
 
     /**
-     * @param string|integer $userId
-     * @return stdClass|Exception
-     * @see https://developers.intercom.com/v2.0/reference#user-model
+     * Makes one request *per* tag.
+     *
+     * @param $tag
+     * @param array $userIds
+     * @return stdClass
+     * @throws IntercomeoException
      */
-    public function getUser($userId)
+    public function tagUsers($tag, array $userIds)
     {
-        return $this->intercomClient->users->getUsers(['user_id' => $userId]);
-    }
+        $users = [];
 
-    /**
-     * @param $userId
-     * @param $email
-     * @return stdClass|Exception
-     */
-    public function getUserCreateIfDoesNotYetExist($userId, $email)
-    {
-        $user = null;
+        foreach ($userIds as $userId) {
+            $users[] = ['user_id' => $userId];
+        }
 
         try {
-            $user = $this->getUser($userId);
-        } catch (Exception $e) {
-            try {
-                $user = $this->storeUser($userId, $email);
-            } catch (Exception $e) {
-                return $e;
-            }
+            return $this->intercomClient->tags->tag(['name' => $tag, 'users' => $users]);
+        } catch (GuzzleException $exception) {
+            throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
         }
-
-        return $user;
     }
 
     /**
+     * Makes one request *per* tag.
      *
-     * @param stdClass $user
-     * @return integer
-     *
-     * Designed to have the result of the `getUser` method passed in. Example:
-     *
-     *     $lastRequestAt = Carbon::parse(
-     *         $this->userService->getLastRequestAt(
-     *             $this->userService->getUser($userId)
-     *         )
-     *     );
+     * @param $tag
+     * @param array $userIds
      */
-    public function getLastRequestAt(stdClass $user)
+    public function unTagUsers($tag, array $userIds)
     {
-        return (integer)$user->last_request_at;
-    }
+        $users = [];
 
-    /**
-     * @param stdClass $user
-     * @param int $utcTimestamp
-     * @return stdClass|Exception
-     */
-    public function storeLatestActivity(stdClass $user, $utcTimestamp = null)
-    {
-        $userId = $user->user_id;
-        $utcTimestamp = $utcTimestamp ?? time();
-
-        return $this->intercomClient->users->create(
-            [
-                'user_id' => $userId,
-                'last_request_at' => $utcTimestamp
-            ]
-        );
-    }
-
-    /**
-     * @param $userId
-     * @param $email
-     * @param int $timeOfCurrentRequest
-     * @param int|null $timeOfPreviousRequest
-     * @return bool|Exception|stdClass
-     */
-    public function lastRequestAtUpdateEvaluationAndAction(
-        $userId,
-        $email,
-        $timeOfCurrentRequest,
-        $timeOfPreviousRequest = null
-    ) {
-        if (is_null($timeOfPreviousRequest) ||
-            $timeOfCurrentRequest - $timeOfPreviousRequest >
-            config('intercomeo.last_request_buffer_amount')) {
-
-            $user = $this->getUserCreateIfDoesNotYetExist(
-                $userId,
-                $email
-            );
-
-            return $this->storeLatestActivity($user, $timeOfCurrentRequest);
+        foreach ($userIds as $userId) {
+            $users[] = ['user_id' => $userId, "untag" => true];
         }
 
-        return true;
-    }
-
-    /**
-     * @param stdClass|[] $users
-     * @param array|string $tags
-     * @param bool $untag
-     * @return bool
-     * Makes one request *per* tag. Sad!
-     */
-    public function tagUsers($users, $tags, $untag = false)
-    {
-        $simplifiedUsers = [];
-
-        if (!is_array($users)) {
-            $users = [$users];
-        }
-
-        if (!is_array($tags)) {
-            $tags = [$tags];
-        }
-
-        foreach ($users as $user) {
-            $simplifiedUsers[] = ['user_id' => $user->user_id, 'untag' => $untag];
-        }
-
-        foreach ($tags as $tagName) {
-            try {
-                $this->intercomClient->tags->tag(
-                    [
-                        'name' => $tagName,
-                        'users' => $simplifiedUsers
-                    ]
-                );
-            } catch (Exception $exception) {
-                Log::error(
-                    '\Railroad\Intercomeo\Services\IntercomeoService::tagUsers failed for tag ' .
-                    $tagName .
-                    ' for users ' .
-                    print_r($simplifiedUsers, true) .
-                    ' with error: ' .
-                    $exception->getMessage()
-                );
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * @param stdClass|[] $users
-     * @param array|string $tags
-     * @return bool
-     * Makes one request *per* tag. Sad!
-     */
-    public function untagUsers($users, $tags)
-    {
-        return $this->tagUsers($users, $tags, true);
+        $this->intercomClient->tags->tag(['name' => $tag, 'users' => $users]);
     }
 }
