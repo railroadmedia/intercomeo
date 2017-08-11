@@ -2,7 +2,6 @@
 
 namespace Railroad\Intercomeo\Services;
 
-use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Intercom\IntercomClient;
 use Railroad\Intercomeo\Exceptions\IntercomeoException;
@@ -68,6 +67,8 @@ class IntercomeoService
      *
      * @param $tag
      * @param array $userIds
+     * @return stdClass
+     * @throws IntercomeoException
      */
     public function unTagUsers($tag, array $userIds)
     {
@@ -77,6 +78,10 @@ class IntercomeoService
             $users[] = ['user_id' => $userId, "untag" => true];
         }
 
-        $this->intercomClient->tags->tag(['name' => $tag, 'users' => $users]);
+        try {
+            return $this->intercomClient->tags->tag(['name' => $tag, 'users' => $users]);
+        } catch (GuzzleException $exception) {
+            throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
+        }
     }
 }
