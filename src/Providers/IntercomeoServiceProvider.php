@@ -14,15 +14,6 @@ class IntercomeoServiceProvider extends ServiceProvider
     protected $intercomAppId;
     protected $intercomAccessToken;
 
-    protected $listen = [
-        UserCreated::class => [
-            UserCreatedEventListener::class . '@handle'
-        ],
-        ApplicationReceivedRequest::class => [
-            ApplicationReceivedRequestEventListener::class . '@handle'
-        ]
-    ];
-
     /**
      * Bootstrap the application services.
      *
