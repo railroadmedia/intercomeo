@@ -56,6 +56,11 @@ https://developers.intercom.com/v2.0/reference#user-model)). If we were to set t
 *The default "buffer time amount" is set and can be overridden in the config.*
 
 
+Frontend
+------------------
+
+Follow instructions provided by Intercom (https://developers.intercom.com/docs/basic-javascript).
+
 
 Testing
 -------
