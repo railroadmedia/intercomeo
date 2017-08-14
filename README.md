@@ -12,6 +12,7 @@ Installation
     1. `composer install`
     1. `php artisan migrate`
     1. `php artisan vendor:publish`
+1. Edit *laravel/config/intercomeo.php* (resulting from `php artisan vendor:publish` mentioned above) accordingly
 1. Integrate into your application by firing and calling `Intercomeo` events and methods (respectively) as needed.
 
 
