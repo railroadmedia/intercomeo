@@ -33,7 +33,9 @@ class IntercomeoService
     public function syncUser($userId, array $attributes)
     {
         try {
-            return $this->intercomClient->users->create(array_merge(["user_id" => $userId], $attributes));
+            return $this->intercomClient->users->create(
+                array_merge(["user_id" => config('intercom.user_id_domain_prepend_string') . $userId], $attributes)
+            );
         } catch (GuzzleException $exception) {
             throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
         }
