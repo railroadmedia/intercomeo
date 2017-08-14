@@ -5,14 +5,13 @@ Intercom Integration
 Installation
 ------------
 
-1. Copy secrets to .env from secure note. The "access token" is key. "App ID" and "HMAC Secret" are optional. 
+1. Copy secrets to .env from secure note. 
 1. Add IntercomeoServiceProvider to list of "providers" in `config/app.php`.
 1. Add to composer.json "require".
-1. In `laravel` directory, run the following:
+1. Run the following:
     1. `composer install`
-    1. `php artisan migrate`
     1. `php artisan vendor:publish`
-1. Edit *laravel/config/intercomeo.php* (resulting from `php artisan vendor:publish` mentioned above) accordingly
+1. Edit *laravel/config/intercomeo.php* (resulting from `php artisan vendor:publish` mentioned above) accordingly.
 1. Integrate into your application by firing and calling `Intercomeo` events and methods (respectively) as needed.
 
 
