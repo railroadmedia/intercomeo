@@ -81,11 +81,6 @@ class TestCase extends BaseTestCase
         );
         $app['config']->set('intercomeo.last_request_buffer_unit', env('LAST_REQUEST_BUFFER_UNIT'));
         $app['config']->set('intercomeo.level_to_round_down_to', env('LEVEL_TO_ROUND_DOWN_TO'));
-
-        $app['config']->set(
-            'intercomeo.only_track_last_request_at_for_users_already_in_intercom',
-            env('ONLY_TRACK_LAST_REQUEST_AT_FOR_USERS_ALREADY_IN_INTERCOM')
-        );
     }
 
     /**
