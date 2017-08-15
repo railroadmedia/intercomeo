@@ -15,6 +15,11 @@ class IntercomeoService
     private $intercomClient;
 
     /**
+     * @var string
+     */
+    private $prependToUserId;
+
+    /**
      * IntercomeoService constructor.
      *
      * @param IntercomClient $intercomClient
@@ -22,6 +27,7 @@ class IntercomeoService
     public function __construct(IntercomClient $intercomClient)
     {
         $this->intercomClient = $intercomClient;
+        $this->prependToUserId = config('intercom.user_id_domain_prepend_string');
     }
 
     /**
@@ -34,7 +40,7 @@ class IntercomeoService
     {
         try {
             return $this->intercomClient->users->create(
-                array_merge(["user_id" => config('intercom.user_id_domain_prepend_string') . $userId], $attributes)
+                array_merge(["user_id" => $this->prependToUserId . $userId], $attributes)
             );
         } catch (GuzzleException $exception) {
             throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
@@ -54,7 +60,7 @@ class IntercomeoService
         $users = [];
 
         foreach ($userIds as $userId) {
-            $users[] = ['user_id' => config('intercom.user_id_domain_prepend_string') . $userId];
+            $users[] = ['user_id' => $this->prependToUserId . $userId];
         }
 
         try {
@@ -77,7 +83,7 @@ class IntercomeoService
         $users = [];
 
         foreach ($userIds as $userId) {
-            $users[] = ['user_id' => config('intercom.user_id_domain_prepend_string') . $userId, "untag" => true];
+            $users[] = ['user_id' => $this->prependToUserId . $userId, "untag" => true];
         }
 
         try {
