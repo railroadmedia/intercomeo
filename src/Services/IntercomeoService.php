@@ -54,7 +54,7 @@ class IntercomeoService
         $users = [];
 
         foreach ($userIds as $userId) {
-            $users[] = ['user_id' => $userId];
+            $users[] = ['user_id' => config('intercom.user_id_domain_prepend_string') . $userId];
         }
 
         try {
@@ -77,7 +77,7 @@ class IntercomeoService
         $users = [];
 
         foreach ($userIds as $userId) {
-            $users[] = ['user_id' => $userId, "untag" => true];
+            $users[] = ['user_id' => config('intercom.user_id_domain_prepend_string') . $userId, "untag" => true];
         }
 
         try {
