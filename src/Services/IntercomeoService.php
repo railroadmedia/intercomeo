@@ -27,7 +27,7 @@ class IntercomeoService
     public function __construct(IntercomClient $intercomClient)
     {
         $this->intercomClient = $intercomClient;
-        $this->prependToUserId = config('intercom.user_id_domain_prepend_string');
+        $this->prependToUserId = config('intercomeo.user_id_domain_prepend_string');
     }
 
     /**
