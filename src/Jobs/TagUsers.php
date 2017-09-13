@@ -4,13 +4,12 @@ namespace Railroad\Intercomeo\Jobs;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Railroad\Intercomeo\Services\IntercomeoService;
 
 class TagUsers implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable;
+    use InteractsWithQueue, Queueable;
 
     /**
      * @var string

@@ -2,15 +2,15 @@
 
 namespace Railroad\Intercomeo\Jobs;
 
+use App\Jobs\Job;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Railroad\Intercomeo\Services\IntercomeoService;
 
-class SyncUser implements ShouldQueue
+class SyncUser extends Job implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable;
+    use InteractsWithQueue, Queueable;
 
     /**
      * @var int
