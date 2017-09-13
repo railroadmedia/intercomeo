@@ -2,6 +2,7 @@
 
 namespace Railroad\Intercomeo\Providers;
 
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Intercom\IntercomClient;
 use Railroad\Intercomeo\Events\ApplicationReceivedRequest;
@@ -17,17 +18,17 @@ class IntercomeoServiceProvider extends ServiceProvider
     /**
      * Bootstrap the application services.
      *
+     * @param Dispatcher $events
      * @return void
      */
-    public function boot()
+    public function boot(Dispatcher $events)
     {
-        parent::boot();
+        parent::boot($events);
 
         $destination = __DIR__ . '/../../../../../config';
         $origin = __DIR__ . '/../../config';
-        
+
         $this->publishes([$origin => $destination]);
-        $this->loadMigrationsFrom(__DIR__ . '/../../migrations');
     }
 
     /**
