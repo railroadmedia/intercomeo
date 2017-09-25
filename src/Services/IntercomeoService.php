@@ -2,6 +2,7 @@
 
 namespace Railroad\Intercomeo\Services;
 
+use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
 use Intercom\IntercomClient;
 use Railroad\Intercomeo\Exceptions\IntercomeoException;
@@ -88,6 +89,28 @@ class IntercomeoService
 
         try {
             return $this->intercomClient->tags->tag(['name' => $tag, 'users' => $users]);
+        } catch (GuzzleException $exception) {
+            throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
+        }
+    }
+
+    /**
+     * @param string $name
+     * @param string $dateTime
+     * @param int $userId
+     * @return mixed
+     * @throws IntercomeoException
+     */
+    public function createEvent($name, $dateTime, $userId)
+    {
+        try {
+            return $this->intercomClient->events->create(
+                [
+                    'event_name' => $name,
+                    'created_at' => Carbon::parse($dateTime)->timestamp,
+                    'user_id' => $userId
+                ]
+            );
         } catch (GuzzleException $exception) {
             throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
         }
