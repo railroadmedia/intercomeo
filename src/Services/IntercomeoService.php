@@ -3,9 +3,7 @@
 namespace Railroad\Intercomeo\Services;
 
 use Carbon\Carbon;
-use GuzzleHttp\Exception\GuzzleException;
 use Intercom\IntercomClient;
-use Railroad\Intercomeo\Exceptions\IntercomeoException;
 use stdClass;
 
 class IntercomeoService
@@ -34,32 +32,22 @@ class IntercomeoService
     /**
      * @param $userId
      * @return mixed
-     * @throws IntercomeoException
      */
     public function getUser($userId)
     {
-        try {
-            return $this->intercomClient->users->getUser($this->prependToUserId . $userId);
-        } catch (GuzzleException $exception) {
-            throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
-        }
+        return $this->intercomClient->users->getUser($this->prependToUserId . $userId);
     }
 
     /**
      * @param $userId
      * @param array $attributes
      * @return stdClass
-     * @throws IntercomeoException
      */
     public function syncUser($userId, array $attributes)
     {
-        try {
-            return $this->intercomClient->users->create(
-                array_merge(["user_id" => $this->prependToUserId . $userId], $attributes)
-            );
-        } catch (GuzzleException $exception) {
-            throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
-        }
+        return $this->intercomClient->users->create(
+            array_merge(["user_id" => $this->prependToUserId . $userId], $attributes)
+        );
     }
 
     /**
@@ -68,7 +56,6 @@ class IntercomeoService
      * @param $tag
      * @param array $userIds
      * @return stdClass
-     * @throws IntercomeoException
      */
     public function tagUsers($tag, array $userIds)
     {
@@ -78,11 +65,7 @@ class IntercomeoService
             $users[] = ['user_id' => $this->prependToUserId . $userId];
         }
 
-        try {
-            return $this->intercomClient->tags->tag(['name' => $tag, 'users' => $users]);
-        } catch (GuzzleException $exception) {
-            throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
-        }
+        return $this->intercomClient->tags->tag(['name' => $tag, 'users' => $users]);
     }
 
     /**
@@ -91,7 +74,6 @@ class IntercomeoService
      * @param $tag
      * @param array $userIds
      * @return stdClass
-     * @throws IntercomeoException
      */
     public function unTagUsers($tag, array $userIds)
     {
@@ -101,11 +83,7 @@ class IntercomeoService
             $users[] = ['user_id' => $this->prependToUserId . $userId, "untag" => true];
         }
 
-        try {
-            return $this->intercomClient->tags->tag(['name' => $tag, 'users' => $users]);
-        } catch (GuzzleException $exception) {
-            throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
-        }
+        return $this->intercomClient->tags->tag(['name' => $tag, 'users' => $users]);
     }
 
     /**
@@ -113,20 +91,15 @@ class IntercomeoService
      * @param string $dateTime
      * @param int $userId
      * @return mixed
-     * @throws IntercomeoException
      */
     public function createEvent($name, $dateTime, $userId)
     {
-        try {
-            return $this->intercomClient->events->create(
-                [
-                    'event_name' => $name,
-                    'created_at' => Carbon::parse($dateTime)->timestamp,
-                    'user_id' => $userId
-                ]
-            );
-        } catch (GuzzleException $exception) {
-            throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
-        }
+        return $this->intercomClient->events->create(
+            [
+                'event_name' => $name,
+                'created_at' => Carbon::parse($dateTime)->timestamp,
+                'user_id' => $userId
+            ]
+        );
     }
 }
