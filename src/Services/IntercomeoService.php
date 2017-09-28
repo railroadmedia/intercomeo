@@ -98,7 +98,7 @@ class IntercomeoService
             [
                 'event_name' => $name,
                 'created_at' => Carbon::parse($dateTime)->timestamp,
-                'user_id' => $userId
+                'user_id' => $this->prependToUserId . $userId
             ]
         );
     }
