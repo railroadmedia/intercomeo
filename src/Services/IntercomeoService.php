@@ -33,6 +33,20 @@ class IntercomeoService
 
     /**
      * @param $userId
+     * @return mixed
+     * @throws IntercomeoException
+     */
+    public function getUser($userId)
+    {
+        try {
+            return $this->intercomClient->users->getUser($this->prependToUserId . $userId);
+        } catch (GuzzleException $exception) {
+            throw new IntercomeoException($exception->getMessage(), $exception->getCode(), $exception);
+        }
+    }
+
+    /**
+     * @param $userId
      * @param array $attributes
      * @return stdClass
      * @throws IntercomeoException
