@@ -35,9 +35,9 @@ class IntercomeoService
      */
     public function getUser($userId)
     {
-        return $this->intercomClient->users->getUser($this->prependToUserId . $userId);
+        return $this->intercomClient->get('users', ['user_id' => $this->prependToUserId . $userId]);
     }
-
+    
     /**
      * @param $userId
      * @param array $attributes
