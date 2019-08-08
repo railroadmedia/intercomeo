@@ -3,8 +3,9 @@
 namespace Railroad\Intercomeo\Services;
 
 use Carbon\Carbon;
+use GuzzleHttp\Exception\GuzzleException;
 use Intercom\IntercomClient;
-use stdClass;
+
 
 class IntercomeoService
 {
@@ -32,16 +33,18 @@ class IntercomeoService
     /**
      * @param $userId
      * @return mixed
+     * @throws GuzzleException
      */
     public function getUser($userId)
     {
         return $this->intercomClient->get('users', ['user_id' => $this->prependToUserId . $userId]);
     }
-    
+
     /**
      * @param $userId
      * @param array $attributes
-     * @return stdClass
+     * @return mixed
+     * @throws GuzzleException
      */
     public function syncUser($userId, array $attributes)
     {
@@ -55,7 +58,8 @@ class IntercomeoService
      *
      * @param $tag
      * @param array $userIds
-     * @return stdClass
+     * @return mixed
+     * @throws GuzzleException
      */
     public function tagUsers($tag, array $userIds)
     {
@@ -73,7 +77,8 @@ class IntercomeoService
      *
      * @param $tag
      * @param array $userIds
-     * @return stdClass
+     * @return mixed
+     * @throws GuzzleException
      */
     public function unTagUsers($tag, array $userIds)
     {
@@ -87,10 +92,11 @@ class IntercomeoService
     }
 
     /**
-     * @param string $name
-     * @param string $dateTime
-     * @param int $userId
+     * @param $name
+     * @param $dateTime
+     * @param $userId
      * @return mixed
+     * @throws GuzzleException
      */
     public function createEvent($name, $dateTime, $userId)
     {
@@ -98,8 +104,46 @@ class IntercomeoService
             [
                 'event_name' => $name,
                 'created_at' => Carbon::parse($dateTime)->timestamp,
-                'user_id' => $this->prependToUserId . $userId
+                'user_id' => $this->prependToUserId . $userId,
             ]
         );
+    }
+
+    /**
+     * @param array $attributes
+     * @return mixed
+     * @throws GuzzleException
+     */
+    public function createUpdateUser(array $attributes)
+    {
+        if (array_key_exists('user_id', $attributes)) {
+            $attributes["user_id"] = $this->prependToUserId . $attributes['user_id'];
+        }
+
+        return $this->intercomClient->users->create(
+            $attributes
+        );
+    }
+
+    /**
+     * @param $tag
+     * @param $user
+     * @return mixed
+     * @throws GuzzleException
+     */
+    public function tagUser($tag, array $user)
+    {
+        return $this->intercomClient->tags->tag(['name' => $tag, 'users' => [$user]]);
+    }
+
+    /**
+     * @param $tag
+     * @param $users
+     * @return mixed
+     * @throws GuzzleException
+     */
+    public function unTagUser($tag, array $users)
+    {
+        return $this->intercomClient->tags->tag(['name' => $tag, 'users' => [array_merge($users, ['untag' => true])]]);
     }
 }
