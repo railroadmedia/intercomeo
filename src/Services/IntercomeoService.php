@@ -144,6 +144,10 @@ class IntercomeoService
      */
     public function unTagUser($tag, array $users)
     {
+        if (array_key_exists('user_id', $users)) {
+            $users["user_id"] = $this->prependToUserId . $users['user_id'];
+        }
+        
         return $this->intercomClient->tags->tag(['name' => $tag, 'users' => [array_merge($users, ['untag' => true])]]);
     }
 }
