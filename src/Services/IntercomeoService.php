@@ -108,7 +108,7 @@ class IntercomeoService
      * @throws GuzzleException
      * @return object
      */
-    public function getUser(int $userId)
+    public function getUser($userId)
     {
         return $this->intercomClient->get('users', ['user_id' => $userId]);
     }
@@ -198,7 +198,7 @@ class IntercomeoService
      * @throws GuzzleException
      * @return object
      */
-    public function syncUser(int $userId, array $attributes)
+    public function syncUser($userId, array $attributes)
     {
         return $this->intercomClient->users->create(
             array_merge(["user_id" => $userId], $attributes)
@@ -267,7 +267,7 @@ class IntercomeoService
      * @throws GuzzleException
      * @return void
      */
-    public function triggerEventForUser(int $userId, string $name, string $dateTimeString)
+    public function triggerEventForUser($userId, string $name, string $dateTimeString)
     {
         $this->intercomClient->events->create(
             [

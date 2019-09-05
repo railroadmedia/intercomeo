@@ -8,7 +8,7 @@ use Railroad\Intercomeo\Services\IntercomeoService;
 class IntercomTriggerEventForUser extends IntercomBaseJob
 {
     /**
-     * @var int
+     * @var string
      */
     public $userId;
 
@@ -23,11 +23,11 @@ class IntercomTriggerEventForUser extends IntercomBaseJob
     public $dateTimeString;
 
     /**
-     * @param  integer  $userId
+     * @param  string  $userId
      * @param  string  $name
      * @param  string  $dateTimeString
      */
-    public function __construct(int $userId, string $name, string $dateTimeString)
+    public function __construct($userId, string $name, string $dateTimeString)
     {
         $this->userId = $userId;
         $this->name = $name;

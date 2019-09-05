@@ -8,7 +8,7 @@ use Railroad\Intercomeo\Services\IntercomeoService;
 class IntercomTagUsers extends IntercomBaseJob
 {
     /**
-     * @var int[]
+     * @var string[]
      */
     public $userIds;
 

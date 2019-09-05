@@ -8,7 +8,7 @@ use Railroad\Intercomeo\Services\IntercomeoService;
 class IntercomSyncUser extends IntercomBaseJob
 {
     /**
-     * @var int
+     * @var string
      */
     public $userId;
 
@@ -20,10 +20,10 @@ class IntercomSyncUser extends IntercomBaseJob
     /**
      * List of attributes available here: https://developers.intercom.com/v2.0/reference#user-model
      *
-     * @param  integer  $userId
+     * @param  string  $userId
      * @param  array  $attributes
      */
-    public function __construct(int $userId, array $attributes = [])
+    public function __construct($userId, array $attributes = [])
     {
         $this->userId = $userId;
         $this->attributes = $attributes;
