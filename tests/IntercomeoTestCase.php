@@ -8,7 +8,6 @@ use Illuminate\Database\DatabaseManager;
 use Intercom\IntercomClient;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use PHPUnit_Framework_MockObject_MockObject;
-use Railroad\Ecommerce\Contracts\UserProviderInterface;
 use Railroad\Intercomeo\Providers\IntercomeoServiceProvider;
 use Railroad\Intercomeo\Services\IntercomeoService;
 
