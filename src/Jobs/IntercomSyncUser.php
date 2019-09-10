@@ -2,6 +2,7 @@
 
 namespace Railroad\Intercomeo\Jobs;
 
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Railroad\Intercomeo\Services\IntercomeoService;
 
@@ -36,6 +37,23 @@ class IntercomSyncUser extends IntercomBaseJob
      */
     public function handle(IntercomeoService $intercomeoService)
     {
-        $intercomeoService->syncUser($this->userId, $this->attributes);
+        try {
+            $intercomeoService->syncUser($this->userId, $this->attributes);
+        } catch (Exception $exception) {
+            $this->failed($exception);
+        }
+    }
+
+    /**
+     * The job failed to process.
+     *
+     * @param  Exception  $exception
+     */
+    public function failed(Exception $exception)
+    {
+        error_log('Error syncing user to intercom. User ID: '.$this->userId.' - Attributes: '.print_r($this->attributes,
+                true));
+
+        parent::failed($exception);
     }
 }

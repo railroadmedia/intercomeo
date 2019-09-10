@@ -2,6 +2,7 @@
 
 namespace Railroad\Intercomeo\Jobs;
 
+use Exception;
 use Railroad\Intercomeo\Services\IntercomeoService;
 
 class IntercomUnTagUsers extends IntercomBaseJob
@@ -35,6 +36,25 @@ class IntercomUnTagUsers extends IntercomBaseJob
      */
     public function handle(IntercomeoService $intercomeoService)
     {
-        $intercomeoService->unTagUsers($this->userIds, $this->tagName);
+        try {
+            $intercomeoService->unTagUsers($this->userIds, $this->tagName);
+        } catch (Exception $exception) {
+            $this->failed($exception);
+        }
+    }
+
+    /**
+     * The job failed to process.
+     *
+     * @param  Exception  $exception
+     */
+    public function failed(Exception $exception)
+    {
+        error_log('Error un-tagging users in intercom. User IDs: '
+            .print_r($this->userIds, true)
+            .' - Tag Name: '
+            .$this->tagName);
+
+        parent::failed($exception);
     }
 }

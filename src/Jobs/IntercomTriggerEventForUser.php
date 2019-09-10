@@ -2,6 +2,7 @@
 
 namespace Railroad\Intercomeo\Jobs;
 
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Railroad\Intercomeo\Services\IntercomeoService;
 
@@ -41,6 +42,27 @@ class IntercomTriggerEventForUser extends IntercomBaseJob
      */
     public function handle(IntercomeoService $intercomeoService)
     {
-        $intercomeoService->triggerEventForUser($this->userId, $this->name, $this->dateTimeString);
+        try {
+            $intercomeoService->triggerEventForUser($this->userId, $this->name, $this->dateTimeString);
+        } catch (Exception $exception) {
+            $this->failed($exception);
+        }
+    }
+
+    /**
+     * The job failed to process.
+     *
+     * @param  Exception  $exception
+     */
+    public function failed(Exception $exception)
+    {
+        error_log('Error tagging user in intercom. User ID: '
+            .print_r($this->userId, true)
+            .' - Event Name: '
+            .$this->name
+            .' - Date: '
+            .$this->dateTimeString);
+
+        parent::failed($exception);
     }
 }
