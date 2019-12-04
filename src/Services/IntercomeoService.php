@@ -277,4 +277,38 @@ class IntercomeoService
             ]
         );
     }
+
+    /**
+     * @param array $attributes
+     * @return mixed
+     * @throws GuzzleException
+     */
+    public function createUpdateUser(array $attributes)
+    {
+        return $this->intercomClient->users->create(
+            $attributes
+        );
+    }
+
+    /**
+     * @param $tag
+     * @param array $user
+     * @return mixed
+     * @throws GuzzleException
+     */
+    public function tagUser($tag, array $user)
+    {
+        return $this->intercomClient->tags->tag(['name' => $tag, 'users' => [$user]]);
+    }
+
+    /**
+     * @param $tag
+     * @param array $users
+     * @return mixed
+     * @throws GuzzleException
+     */
+    public function unTagUser($tag, array $users)
+    {
+        return $this->intercomClient->tags->tag(['name' => $tag, 'users' => [array_merge($users, ['untag' => true])]]);
+    }
 }

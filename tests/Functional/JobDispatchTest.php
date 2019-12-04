@@ -4,8 +4,11 @@ namespace Railroad\Intercomeo\Tests;
 
 use Carbon\Carbon;
 use Railroad\Intercomeo\Jobs\IntercomSyncUser;
+use Railroad\Intercomeo\Jobs\IntercomSyncUserByAttributes;
+use Railroad\Intercomeo\Jobs\IntercomTagUserByAttributes;
 use Railroad\Intercomeo\Jobs\IntercomTagUsers;
 use Railroad\Intercomeo\Jobs\IntercomTriggerEventForUser;
+use Railroad\Intercomeo\Jobs\IntercomUnTagUserByAttributes;
 use Railroad\Intercomeo\Jobs\IntercomUnTagUsers;
 
 class JobDispatchTest extends IntercomeoTestCase
@@ -97,5 +100,61 @@ class JobDispatchTest extends IntercomeoTestCase
             ]);
 
         dispatch(new IntercomTriggerEventForUser($userId, $eventName, $eventDateTimeString));
+    }
+
+    public function test_sync_user_by_attributtes()
+    {
+        $attributes = ['email' => $this->faker->email];
+
+        $this->intercomeoClientMock->expects($this->once())
+            ->method('create')
+            ->with($attributes)
+            ->willReturn((object) ['email' => $attributes['email']]);
+
+        dispatch(new IntercomSyncUserByAttributes($attributes));
+    }
+
+    public function test_tag_user_by_attributes()
+    {
+        $tagName = $this->faker->word;
+        $attributes = ['email' => $this->faker->email];
+
+        $this->intercomeoClientMock->expects($this->once())
+            ->method('tag')
+            ->with([
+                'name' => $tagName,
+                'users' => [
+                    $attributes
+                ],
+            ])
+            ->willReturn((object) [
+                'type' => 'tag',
+                'name' => $tagName,
+                'id' => rand(),
+            ]);
+
+        dispatch(new IntercomTagUserByAttributes($tagName, $attributes));
+    }
+
+    public function test_untag_user_by_attributes()
+    {
+        $tagName = $this->faker->word;
+        $attributes = ['email' => $this->faker->email];
+
+        $this->intercomeoClientMock->expects($this->once())
+            ->method('tag')
+            ->with([
+                'name' => $tagName,
+                'users' => [
+                    array_merge($attributes,["untag" => true,])
+                ],
+            ])
+            ->willReturn((object) [
+                'type' => 'tag',
+                'name' => $tagName,
+                'id' => rand(),
+            ]);
+
+        dispatch(new IntercomUnTagUserByAttributes($tagName, $attributes));
     }
 }
