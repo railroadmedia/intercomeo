@@ -311,4 +311,12 @@ class IntercomeoService
     {
         return $this->intercomClient->tags->tag(['name' => $tag, 'users' => [array_merge($users, ['untag' => true])]]);
     }
+
+    /**
+     * @return int[]
+     */
+    public function getRateLimitDetails()
+    {
+        return $this->intercomClient->getRateLimitDetails();
+    }
 }
